@@ -7,6 +7,8 @@ import org.n52.javaps.algorithm.ExecutionException;
 import org.n52.javaps.description.TypedProcessDescription;
 import org.n52.javaps.description.impl.TypedProcessDescriptionImpl;
 import org.n52.javaps.engine.ProcessExecutionContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -14,8 +16,10 @@ import org.n52.javaps.engine.ProcessExecutionContext;
  */
 public class DockerAlgorithm extends AbstractAlgorithm {
     
-    private final DockerClient docker;
-    private final ProcessImage image;
+    private static final Logger LOG = LoggerFactory.getLogger(DockerAlgorithm.class);
+    
+    protected final DockerClient docker;
+    protected final ProcessImage image;
 
     public DockerAlgorithm(DockerClient docker, ProcessImage image) {
         this.docker = docker;

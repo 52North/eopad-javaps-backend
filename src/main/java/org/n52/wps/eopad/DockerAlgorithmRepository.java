@@ -1,11 +1,13 @@
 
 package org.n52.wps.eopad;
 
-import java.net.URI;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.n52.faroe.annotation.Configurable;
+import org.n52.faroe.annotation.Setting;
 import org.n52.javaps.algorithm.AlgorithmRepository;
 import org.n52.javaps.algorithm.IAlgorithm;
 import org.n52.javaps.description.TypedProcessDescription;
@@ -19,13 +21,26 @@ import org.springframework.beans.factory.annotation.Autowired;
  *
  * @author Matthes Rieke <m.rieke@52north.org>
  */
+@Configurable
 public class DockerAlgorithmRepository implements AlgorithmRepository, InitializingBean {
     
     private static final Logger LOG = LoggerFactory.getLogger(DockerAlgorithmRepository.class);
 
     @Autowired
     private DockerProcessRegistry processRegistry;
+    private String scihubUsername;
+    private String scihubPassword;
 
+    @Setting("scihub.username")
+    public void setScihubUsername(String scihubUsername) {
+        this.scihubUsername = scihubUsername;
+    }
+
+    @Setting("scihub.password")
+    public void setScihubPassword(String scihubPassword) {
+        this.scihubPassword = scihubPassword;
+    }
+    
     @Override
     public void afterPropertiesSet() throws Exception {
         LOG.info("DockerAlgorithmRepository initialised");
@@ -36,7 +51,7 @@ public class DockerAlgorithmRepository implements AlgorithmRepository, Initializ
         List<ProcessImage> images = this.processRegistry.resolveProcessImages();
         return images.stream()
                 .map(i -> {
-                    return new OwsCode(i.getName(), URI.create("https://52north.org/javaps/docker"));
+                    return new OwsCode(i.getIdentifier());
                 }).collect(Collectors.toSet());
     }
 
@@ -45,7 +60,7 @@ public class DockerAlgorithmRepository implements AlgorithmRepository, Initializ
         LOG.info("resolving algorithm for id {}", id.getValue());
         List<ProcessImage> images = this.processRegistry.resolveProcessImages();
         return images.stream()
-                .filter(i -> id.getValue().equals(i.getName()))
+                .filter(i -> id.getValue().equals(i.getIdentifier()))
                 .map(i -> {
                     return this.createDockerAlgorithm(i);
                 }).findFirst();
@@ -68,7 +83,8 @@ public class DockerAlgorithmRepository implements AlgorithmRepository, Initializ
     private IAlgorithm createDockerAlgorithm(ProcessImage i) {
         // TODO currently hardwired!!
         if (i.getName().equals("docker.52north.org/eopad/ndvi")) {
-            return new NdviDockerAlgorithm(this.processRegistry.getDocker(), i);
+            String tempDir = System.getProperty("java.io.tmpdir");
+            return new NdviDockerAlgorithm(this.processRegistry.getDocker(), i, Paths.get(tempDir), scihubUsername, scihubPassword);
         }
         
         return null;

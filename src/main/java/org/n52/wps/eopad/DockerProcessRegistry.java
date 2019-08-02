@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import org.n52.faroe.annotation.Configurable;
+import org.n52.faroe.annotation.Setting;
 import org.n52.javaps.description.impl.TypedLiteralInputDescriptionImpl;
 import org.n52.javaps.description.impl.TypedLiteralOutputDescriptionImpl;
 import org.n52.javaps.io.literal.xsd.LiteralStringType;
@@ -36,6 +38,7 @@ import org.springframework.beans.factory.InitializingBean;
  *
  * @author Matthes Rieke <m.rieke@52north.org>
  */
+@Configurable
 public class DockerProcessRegistry implements InitializingBean, DisposableBean {
 
     private static final Logger LOG = LoggerFactory.getLogger(DockerProcessRegistry.class);
@@ -48,6 +51,7 @@ public class DockerProcessRegistry implements InitializingBean, DisposableBean {
         return dockerHost;
     }
 
+    @Setting("docker.host")
     public void setDockerHost(String dockerHost) {
         this.dockerHost = dockerHost;
     }
