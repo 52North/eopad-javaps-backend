@@ -23,6 +23,9 @@ import org.n52.faroe.annotation.Configurable;
 import org.n52.faroe.annotation.Setting;
 import org.n52.javaps.algorithm.ExecutionException;
 import org.n52.javaps.engine.ProcessExecutionContext;
+import org.n52.javaps.io.GenericFileData;
+import org.n52.javaps.io.data.binding.complex.GenericFileDataBinding;
+import org.n52.javaps.io.data.binding.complex.GeotiffBinding;
 import org.n52.javaps.io.literal.LiteralData;
 import org.n52.javaps.settings.SettingsConstants;
 import org.n52.shetland.ogc.ows.OwsCode;
@@ -113,11 +116,11 @@ public class NdviDockerAlgorithm extends DockerAlgorithm {
             Path targetPath = storageLocation.resolve(targetFileName);
             if (Files.exists(targetPath)) {
                 context.getOutputs().put(new OwsCode("OUTPUT_RASTER"),
-                        new LiteralData(targetPath.toFile().getAbsolutePath()));
+                        new GenericFileDataBinding(new GenericFileData(targetPath.toFile(), "image/tiff")));
             } else {
                 throw new ExecutionException("Output file not available");
             }
-        } catch (InterruptedException ex) {
+        } catch (InterruptedException | IOException ex) {
             LOG.warn("Error on executing docker container: " + ex.getMessage());
             LOG.debug(ex.getMessage(), ex);
             throw new ExecutionException(ex.getMessage(), ex);

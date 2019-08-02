@@ -1,4 +1,4 @@
-POST http://localhost:8080/rest/processes/org.n52.eopad.ndvi/jobs HTTP/1.1
+POST http://localhost:8080/javaPS-webapp-1.4.0-SNAPSHOT/rest/processes/org.n52.eopad.ndvi/jobs HTTP/1.1
 Content-Type: application/json
 
 {
@@ -17,9 +17,9 @@ Content-Type: application/json
       {
          "id": "OUTPUT_RASTER",
          "format":{
-            "mimeType": "text/plain"
+            "mimeType": "image/geotiff"
          },
-         "transmissionMode": "value"
+         "transmissionMode": "reference"
       }
    ]
 }

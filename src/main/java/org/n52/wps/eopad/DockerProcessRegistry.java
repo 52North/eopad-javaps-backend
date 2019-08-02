@@ -16,18 +16,23 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import org.n52.faroe.annotation.Configurable;
 import org.n52.faroe.annotation.Setting;
+import org.n52.javaps.description.impl.TypedComplexOutputDescriptionImpl;
 import org.n52.javaps.description.impl.TypedLiteralInputDescriptionImpl;
 import org.n52.javaps.description.impl.TypedLiteralOutputDescriptionImpl;
+import org.n52.javaps.io.data.binding.complex.GenericFileDataBinding;
+import org.n52.javaps.io.data.binding.complex.GeotiffBinding;
 import org.n52.javaps.io.literal.xsd.LiteralStringType;
 import org.n52.shetland.ogc.ows.OwsAnyValue;
 import org.n52.shetland.ogc.ows.OwsCode;
 import org.n52.shetland.ogc.ows.OwsDomainMetadata;
 import org.n52.shetland.ogc.ows.OwsLanguageString;
 import org.n52.shetland.ogc.ows.OwsValue;
+import org.n52.shetland.ogc.wps.Format;
 import org.n52.shetland.ogc.wps.InputOccurence;
 import org.n52.shetland.ogc.wps.description.LiteralDataDomain;
 import org.n52.shetland.ogc.wps.description.ProcessInputDescription;
 import org.n52.shetland.ogc.wps.description.ProcessOutputDescription;
+import org.n52.shetland.ogc.wps.description.impl.ComplexOutputDescriptionImpl;
 import org.n52.shetland.ogc.wps.description.impl.LiteralDataDomainImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -147,19 +152,16 @@ public class DockerProcessRegistry implements InitializingBean, DisposableBean {
     private List<ProcessOutputDescription> createNdviOutputs() {
         List<ProcessOutputDescription> result = new ArrayList<>();
 
-        LiteralDataDomain ldd = new LiteralDataDomainImpl(OwsAnyValue.instance(),
-                new OwsDomainMetadata("plain"),
-                new OwsDomainMetadata("text"),
-                new OwsValue(""));
-
-        TypedLiteralOutputDescriptionImpl od = new TypedLiteralOutputDescriptionImpl(new OwsCode("OUTPUT_RASTER"),
+        TypedComplexOutputDescriptionImpl od = new TypedComplexOutputDescriptionImpl(new OwsCode("OUTPUT_RASTER"),
                 new OwsLanguageString("the resulting NDVI raster image"),
                 new OwsLanguageString("the resulting NDVI raster image"),
                 Collections.emptySet(),
                 Collections.emptySet(),
-                ldd,
-                Collections.singleton(ldd),
-                new LiteralStringType());
+                new Format("image/tiff"),
+                Collections.singleton(new Format("image/tiff")),
+                BigInteger.valueOf(2048),
+                GenericFileDataBinding.class
+        );
         result.add(od);
         
         return result;
