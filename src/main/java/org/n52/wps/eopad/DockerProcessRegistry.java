@@ -54,6 +54,7 @@ public class DockerProcessRegistry implements InitializingBean, DisposableBean {
     @Setting("docker.host")
     public void setDockerHost(String dockerHost) {
         this.dockerHost = dockerHost;
+        LOG.info("using docker host {}", this.dockerHost);
     }
 
     public DockerClient getDocker() {

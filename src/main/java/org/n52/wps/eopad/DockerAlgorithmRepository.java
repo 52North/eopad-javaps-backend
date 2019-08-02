@@ -46,6 +46,7 @@ public class DockerAlgorithmRepository implements AlgorithmRepository, Initializ
     @Setting("docker.dataDirectory")
     public void setDockerDataDirectory(String dockerDataDirectory) {
         this.dockerDataDirectory = dockerDataDirectory;
+        LOG.info("using docker data directory {}", this.dockerDataDirectory);
     }
     
     @Override
@@ -64,7 +65,7 @@ public class DockerAlgorithmRepository implements AlgorithmRepository, Initializ
 
     @Override
     public Optional<IAlgorithm> getAlgorithm(OwsCode id) {
-        LOG.info("resolving algorithm for id {}", id.getValue());
+        LOG.trace("resolving algorithm for id {}", id.getValue());
         List<ProcessImage> images = this.processRegistry.resolveProcessImages();
         return images.stream()
                 .filter(i -> id.getValue().equals(i.getIdentifier()))
