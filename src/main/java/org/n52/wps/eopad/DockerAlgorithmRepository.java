@@ -28,8 +28,10 @@ public class DockerAlgorithmRepository implements AlgorithmRepository, Initializ
 
     @Autowired
     private DockerProcessRegistry processRegistry;
+    
     private String scihubUsername;
     private String scihubPassword;
+    private String dockerDataDirectory;
 
     @Setting("scihub.username")
     public void setScihubUsername(String scihubUsername) {
@@ -39,6 +41,11 @@ public class DockerAlgorithmRepository implements AlgorithmRepository, Initializ
     @Setting("scihub.password")
     public void setScihubPassword(String scihubPassword) {
         this.scihubPassword = scihubPassword;
+    }
+
+    @Setting("docker.dataDirectory")
+    public void setDockerDataDirectory(String dockerDataDirectory) {
+        this.dockerDataDirectory = dockerDataDirectory;
     }
     
     @Override
@@ -83,8 +90,7 @@ public class DockerAlgorithmRepository implements AlgorithmRepository, Initializ
     private IAlgorithm createDockerAlgorithm(ProcessImage i) {
         // TODO currently hardwired!!
         if (i.getName().equals("docker.52north.org/eopad/ndvi")) {
-            String tempDir = System.getProperty("java.io.tmpdir");
-            return new NdviDockerAlgorithm(this.processRegistry.getDocker(), i, Paths.get(tempDir), scihubUsername, scihubPassword);
+            return new NdviDockerAlgorithm(this.processRegistry.getDocker(), i, Paths.get(this.dockerDataDirectory), scihubUsername, scihubPassword);
         }
         
         return null;
