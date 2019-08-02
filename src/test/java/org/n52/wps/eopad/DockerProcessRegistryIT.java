@@ -13,7 +13,7 @@ import org.n52.shetland.ogc.wps.description.ProcessOutputDescription;
  *
  * @author Matthes Rieke <m.rieke@52north.org>
  */
-public class DockerProcessRegistryTest {
+public class DockerProcessRegistryIT {
     
     @Test
     public void testImageDiscovery() throws Exception {
