@@ -1,11 +1,6 @@
 
 package org.n52.wps.eopad;
 
-import java.nio.file.Paths;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
 import org.n52.faroe.annotation.Configurable;
 import org.n52.faroe.annotation.Setting;
 import org.n52.javaps.algorithm.AlgorithmRepository;
@@ -17,18 +12,23 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 /**
- *
  * @author Matthes Rieke <m.rieke@52north.org>
  */
 @Configurable
 public class DockerAlgorithmRepository implements AlgorithmRepository, InitializingBean {
-    
+
     private static final Logger LOG = LoggerFactory.getLogger(DockerAlgorithmRepository.class);
 
     @Autowired
     private DockerProcessRegistry processRegistry;
-    
+
     private String scihubUsername;
     private String scihubPassword;
     private String dockerDataDirectory;
@@ -48,7 +48,7 @@ public class DockerAlgorithmRepository implements AlgorithmRepository, Initializ
         this.dockerDataDirectory = dockerDataDirectory;
         LOG.info("using docker data directory {}", this.dockerDataDirectory);
     }
-    
+
     @Override
     public void afterPropertiesSet() throws Exception {
         LOG.info("DockerAlgorithmRepository initialised");
@@ -58,9 +58,9 @@ public class DockerAlgorithmRepository implements AlgorithmRepository, Initializ
     public Set<OwsCode> getAlgorithmNames() {
         List<ProcessImage> images = this.processRegistry.resolveProcessImages();
         return images.stream()
-                .map(i -> {
-                    return new OwsCode(i.getIdentifier());
-                }).collect(Collectors.toSet());
+                     .map(ProcessImage::getIdentifier)
+                     .map(OwsCode::new)
+                     .collect(Collectors.toSet());
     }
 
     @Override
@@ -68,19 +68,14 @@ public class DockerAlgorithmRepository implements AlgorithmRepository, Initializ
         LOG.trace("resolving algorithm for id {}", id.getValue());
         List<ProcessImage> images = this.processRegistry.resolveProcessImages();
         return images.stream()
-                .filter(i -> id.getValue().equals(i.getIdentifier()))
-                .map(i -> {
-                    return this.createDockerAlgorithm(i);
-                }).findFirst();
+                     .filter(i -> id.getValue().equals(i.getIdentifier()))
+                     .map(this::createDockerAlgorithm)
+                     .findFirst();
     }
 
     @Override
     public Optional<TypedProcessDescription> getProcessDescription(OwsCode id) {
-        Optional<IAlgorithm> algo = this.getAlgorithm(id);
-        if (!algo.isPresent()) {
-            return Optional.empty();
-        }
-        return Optional.of(algo.get().getDescription());
+        return this.getAlgorithm(id).map(IAlgorithm::getDescription);
     }
 
     @Override
@@ -93,9 +88,8 @@ public class DockerAlgorithmRepository implements AlgorithmRepository, Initializ
         if (i.getName().equals("docker.52north.org/eopad/ndvi")) {
             return new NdviDockerAlgorithm(this.processRegistry.getDocker(), i, Paths.get(this.dockerDataDirectory), scihubUsername, scihubPassword);
         }
-        
+
         return null;
     }
-    
 
 }

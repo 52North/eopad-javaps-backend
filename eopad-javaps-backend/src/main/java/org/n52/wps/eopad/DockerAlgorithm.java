@@ -11,13 +11,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- *
  * @author Matthes Rieke <m.rieke@52north.org>
  */
 public class DockerAlgorithm extends AbstractAlgorithm {
-    
+
     private static final Logger LOG = LoggerFactory.getLogger(DockerAlgorithm.class);
-    
+
     protected final DockerClient docker;
     protected final ProcessImage image;
 
@@ -28,14 +27,14 @@ public class DockerAlgorithm extends AbstractAlgorithm {
 
     @Override
     protected TypedProcessDescription createDescription() {
-        TypedProcessDescriptionImpl.Builder builder = new TypedProcessDescriptionImpl.Builder();
-        builder.withIdentifier(this.image.getIdentifier())
-                .withTitle(this.image.getTitle())
-                .withAbstract(this.image.getAbstrakt())
-                .withInput(this.image.getInputs())
-                .withOutput(this.image.getOutputs())
-                .withVersion("1.0.0");
-        return builder.build();
+        return new TypedProcessDescriptionImpl.Builder()
+                       .withIdentifier(this.image.getIdentifier())
+                       .withTitle(this.image.getTitle())
+                       .withAbstract(this.image.getAbstrakt())
+                       .withInput(this.image.getInputs())
+                       .withOutput(this.image.getOutputs())
+                       .withVersion("1.0.0")
+                       .build();
     }
 
     @Override

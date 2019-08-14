@@ -7,46 +7,41 @@ import com.github.dockerjava.api.model.Image;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
 import org.n52.faroe.annotation.Configurable;
 import org.n52.faroe.annotation.Setting;
 import org.n52.javaps.description.impl.TypedComplexOutputDescriptionImpl;
 import org.n52.javaps.description.impl.TypedLiteralInputDescriptionImpl;
-import org.n52.javaps.description.impl.TypedLiteralOutputDescriptionImpl;
 import org.n52.javaps.io.data.binding.complex.GenericFileDataBinding;
-import org.n52.javaps.io.data.binding.complex.GeotiffBinding;
 import org.n52.javaps.io.literal.xsd.LiteralStringType;
 import org.n52.shetland.ogc.ows.OwsAnyValue;
-import org.n52.shetland.ogc.ows.OwsCode;
-import org.n52.shetland.ogc.ows.OwsDomainMetadata;
-import org.n52.shetland.ogc.ows.OwsLanguageString;
-import org.n52.shetland.ogc.ows.OwsValue;
 import org.n52.shetland.ogc.wps.Format;
 import org.n52.shetland.ogc.wps.InputOccurence;
 import org.n52.shetland.ogc.wps.description.LiteralDataDomain;
 import org.n52.shetland.ogc.wps.description.ProcessInputDescription;
 import org.n52.shetland.ogc.wps.description.ProcessOutputDescription;
-import org.n52.shetland.ogc.wps.description.impl.ComplexOutputDescriptionImpl;
 import org.n52.shetland.ogc.wps.description.impl.LiteralDataDomainImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 
+import java.math.BigInteger;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 /**
- *
  * @author Matthes Rieke <m.rieke@52north.org>
  */
 @Configurable
 public class DockerProcessRegistry implements InitializingBean, DisposableBean {
 
     private static final Logger LOG = LoggerFactory.getLogger(DockerProcessRegistry.class);
+    private static final InputOccurence ONE = new InputOccurence(BigInteger.ONE, BigInteger.ONE);
+    private static final Format IMAGE_TIFF = new Format("image/tiff");
 
     private DockerClient docker;
     private String dockerHost;
@@ -68,9 +63,11 @@ public class DockerProcessRegistry implements InitializingBean, DisposableBean {
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        DockerClientConfig config = DefaultDockerClientConfig.createDefaultConfigBuilder()
-                .withDockerHost(Optional.ofNullable(this.dockerHost).orElse("unix:///var/run/docker.sock"))
-                .build();
+        DockerClientConfig config = DefaultDockerClientConfig
+                                            .createDefaultConfigBuilder()
+                                            .withDockerHost(Optional.ofNullable(this.dockerHost)
+                                                                    .orElse("unix:///var/run/docker.sock"))
+                                            .build();
         this.docker = DockerClientBuilder.getInstance(config).build();
 
         // resolve the images
@@ -86,21 +83,21 @@ public class DockerProcessRegistry implements InitializingBean, DisposableBean {
         }
     }
 
-    protected List<ProcessImage> resolveProcessImages() {
+    List<ProcessImage> resolveProcessImages() {
         ListImagesCmd cmd = this.docker.listImagesCmd()
-                .withLabelFilter(Collections.singletonMap("javaps.docker.version", "1.4.0"));
+                                       .withLabelFilter(Collections.singletonMap("javaps.docker.version", "1.4.0"));
         return cmd.exec().stream()
-                .map(i -> createProcessImage(i))
-                .filter(i -> i != null)
-                .filter(i -> !i.getName().equals("<none>"))
-                .collect(Collectors.toList());
+                  .map(this::createProcessImage)
+                  .filter(Objects::nonNull)
+                  .filter(i -> !i.getName().equals("<none>"))
+                  .collect(Collectors.toList());
     }
 
     private ProcessImage createProcessImage(Image i) {
         ProcessImage pi = new ProcessImage();
 
         if (i.getRepoTags().length > 0) {
-            String[] tag = i.getRepoTags()[0].split("\\:");
+            String[] tag = i.getRepoTags()[0].split(":");
             pi.setName(tag[0]);
             pi.setTag(tag[1]);
 
@@ -128,43 +125,33 @@ public class DockerProcessRegistry implements InitializingBean, DisposableBean {
     }
 
     private List<ProcessInputDescription> createNdviInputs() {
-        List<ProcessInputDescription> result = new ArrayList<>();
-
-        LiteralDataDomain ldd = new LiteralDataDomainImpl(OwsAnyValue.instance(),
-                new OwsDomainMetadata("plain"),
-                new OwsDomainMetadata("text"),
-                new OwsValue(""));
-
-        TypedLiteralInputDescriptionImpl pid1 = new TypedLiteralInputDescriptionImpl(new OwsCode("INPUT_SOURCE"),
-                new OwsLanguageString("Sentinel-2 Filename"),
-                new OwsLanguageString("Sentinel-2 full Filename in the format of MMM_MSIL1C_YYYYMMDDHHMMSS_Nxxyy_ROOO_Txxxxx_<Product Discriminator>"),
-                Collections.emptySet(),
-                Collections.emptySet(),
-                new InputOccurence(BigInteger.ONE, BigInteger.ONE),
-                ldd,
-                Collections.singleton(ldd),
-                new LiteralStringType());
-        result.add(pid1);
-        
-        return result;
+        LiteralDataDomain ldd = new LiteralDataDomainImpl.Builder()
+                                        .withValueDescription(OwsAnyValue.instance())
+                                        .withDataType("plain")
+                                        .withUOM("text")
+                                        .build();
+        return Collections.singletonList(
+                new TypedLiteralInputDescriptionImpl.Builder()
+                        .withIdentifier("INPUT_SOURCE")
+                        .withTitle("Sentinel-2 Filename")
+                        .withAbstract("Sentinel-2 full Filename in the format of MMM_MSIL1C_YYYYMMDDHHMMSS_Nxxyy_ROOO_Txxxxx_<Product Discriminator>")
+                        .withOccurence(ONE)
+                        .withDefaultLiteralDataDomain(ldd)
+                        .withSupportedLiteralDataDomain(ldd)
+                        .withType(new LiteralStringType())
+                        .build());
     }
 
     private List<ProcessOutputDescription> createNdviOutputs() {
-        List<ProcessOutputDescription> result = new ArrayList<>();
-
-        TypedComplexOutputDescriptionImpl od = new TypedComplexOutputDescriptionImpl(new OwsCode("OUTPUT_RASTER"),
-                new OwsLanguageString("the resulting NDVI raster image"),
-                new OwsLanguageString("the resulting NDVI raster image"),
-                Collections.emptySet(),
-                Collections.emptySet(),
-                new Format("image/tiff"),
-                Collections.singleton(new Format("image/tiff")),
-                BigInteger.valueOf(2048),
-                GenericFileDataBinding.class
-        );
-        result.add(od);
-        
-        return result;
+        return Collections.singletonList(new TypedComplexOutputDescriptionImpl.Builder()
+                                                 .withIdentifier("OUTPUT_RASTER")
+                                                 .withTitle("the resulting NDVI raster image")
+                                                 .withAbstract("the resulting NDVI raster image")
+                                                 .withDefaultFormat(IMAGE_TIFF)
+                                                 .withSupportedFormat(IMAGE_TIFF)
+                                                 .withMaximumMegabytes(2048)
+                                                 .withType(GenericFileDataBinding.class)
+                                                 .build());
     }
 
 }

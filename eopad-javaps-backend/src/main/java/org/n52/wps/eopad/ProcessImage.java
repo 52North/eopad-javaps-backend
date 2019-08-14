@@ -1,16 +1,16 @@
 
 package org.n52.wps.eopad;
 
-import java.util.List;
 import org.n52.shetland.ogc.wps.description.ProcessInputDescription;
 import org.n52.shetland.ogc.wps.description.ProcessOutputDescription;
 
+import java.util.List;
+
 /**
- *
  * @author Matthes Rieke <m.rieke@52north.org>
  */
 public class ProcessImage {
-    
+
     private String name;
     private String tag;
     private String identifier;
