@@ -1,3 +1,19 @@
+/*
+ * Copyright 2019 52°North Initiative for Geospatial Open Source
+ * Software GmbH
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
 package org.n52.wps.eopad;
 
@@ -33,10 +49,10 @@ import org.slf4j.LoggerFactory;
 
 /**
  *
- * @author Matthes Rieke <m.rieke@52north.org>
+ * @author <a href="mailto:m.rieke@52north.org">Matthes Rieke</a>
  */
 public class NdviDockerAlgorithm extends DockerAlgorithm {
-    
+
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(NdviDockerAlgorithm.class);
     private final Path storageLocation;
     private String scihubUsername;
@@ -48,14 +64,14 @@ public class NdviDockerAlgorithm extends DockerAlgorithm {
         this.scihubUsername = scihubUsername;
         this.scihubPassword = scihubPassword;
     }
-    
+
     @Override
     public void execute(ProcessExecutionContext context) throws ExecutionException {
         LOG.info("Executing {} with Input {}", context.getJobId(), context.getInputs().keySet()
                 .stream()
                 .map(k -> String.format("%s=%s", k, context.getInputs().get(k)))
                 .collect(Collectors.joining("; ")));
-        
+
         if (!Files.exists(storageLocation)) {
             try {
                 Files.createDirectories(storageLocation);
@@ -64,11 +80,11 @@ public class NdviDockerAlgorithm extends DockerAlgorithm {
                 throw new ExecutionException(ex.getMessage(), ex);
             }
         }
-        
+
         Volume volume1 = new Volume("/data/outputs/");
 
         String targetFileName = UUID.randomUUID().toString() + ".tiff";
-        
+
         CreateContainerCmd create = this.docker.createContainerCmd(this.image.getName())
                   .withVolumes(volume1)
                   .withBinds(new Bind(this.storageLocation.toFile().getAbsolutePath(), volume1))
@@ -77,12 +93,12 @@ public class NdviDockerAlgorithm extends DockerAlgorithm {
                         "OUTPUT_RASTER=/data/outputs/" + targetFileName,
                         "INPUT_SOURCE=" + context.getInputs().get(new OwsCode("INPUT_SOURCE"))
                         .get(0).getPayload());
-        
+
         CreateContainerResponse createResp = create.exec();
-                
+
         try {
             this.docker.startContainerCmd(createResp.getId()).exec();
-            
+
             LogContainerResultCallback loggingCallback = new LogContainerResultCallback() {
                     @Override
                     public void onNext(Frame item) {
@@ -99,7 +115,7 @@ public class NdviDockerAlgorithm extends DockerAlgorithm {
                 .exec(loggingCallback);
 
             loggingCallback.awaitCompletion(30, TimeUnit.MINUTES);
-            
+
             // on rare occassions this could happen before the container finished
             // lets wait five more minutes
             long waitStart = System.currentTimeMillis();
@@ -108,11 +124,11 @@ public class NdviDockerAlgorithm extends DockerAlgorithm {
                 if (!inspectResp.getState().getRunning()) {
                     break;
                 }
-                
+
                 LOG.info("Container still running, lost log listener. Waiting to finish");
                 Thread.sleep(10000);
             }
-            
+
             Path targetPath = storageLocation.resolve(targetFileName);
             if (Files.exists(targetPath)) {
                 context.getOutputs().put(new OwsCode("OUTPUT_RASTER"),
@@ -128,7 +144,7 @@ public class NdviDockerAlgorithm extends DockerAlgorithm {
 //            this.docker.removeContainerCmd(createResp.getId()).exec();
             LOG.info("removed temporary container");
         }
-        
+
     }
 
 }
