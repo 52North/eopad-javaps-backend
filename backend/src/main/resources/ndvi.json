@@ -22,43 +22,7 @@
                 "default": false
               }
             ]
-          },
-          "additionalParameters": [
-            {
-              "role": "http://www.opengis.net/eoc/applicationContext/inputMetadata",
-              "parameters": [
-                {
-                  "name": "Profile",
-                  "_comment": "The Profile element allows to define a more specific format than the registered MIME Media Type (e.g. GeoTiff)",
-                  "values": [
-                    "http://www.opengis.net/eoc/formats/sensor/Sentinel-2"
-                  ]
-                }
-              ]
-            },
-            {
-              "role": "http://www.opengis.net/eoc/applicationContext/inputConstraints",
-              "parameters": [
-                {
-                  "name": "CollectionsConstraints",
-                  "values": [
-                    "Sentinel-2",
-                    "TODO: check which level works with NDVI"
-                  ]
-                },
-                {
-                  "name": "SpatialConstraints",
-                  "_comment": "which geometric operation applies? we assume 'intersects'",
-                  "values": [
-                    "6.9315",
-                    "50.9854",
-                    "7.6071",
-                    "51.3190"
-                  ]
-                }
-              ]
-            }
-          ]
+          }
         },
         {
           "id": "red_source_band",
@@ -71,13 +35,13 @@
                 "dataType": {
                   "name": "integer"
                 },
-                "valueDefinition": {
-                  "allowedRange": {
+                "valueDefinition": [
+                  {
                     "minimumValue": "1",
                     "maximumValue": "13",
                     "rangeClosure": "closed"
                   }
-                }
+                ]
               }
             ]
           }
@@ -116,14 +80,12 @@
                 "dataType": {
                   "name": "number"
                 },
-                "valueDefinition": {
-                  "allowedRanges": [
-                    {
-                      "minimumValue": "0.0",
-                      "rangeClosure": "closed"
-                    }
-                  ]
-                }
+                "valueDefinition": [
+                  {
+                    "minimumValue": "0.0",
+                    "rangeClosure": "closed"
+                  }
+                ]
               }
             ]
           }
@@ -140,14 +102,12 @@
                 "dataType": {
                   "name": "number"
                 },
-                "valueDefinition": {
-                  "allowedRanges": [
-                    {
-                      "minimumValue": "0.0",
-                      "rangeClosure": "closed"
-                    }
-                  ]
-                }
+                "valueDefinition": [
+                  {
+                    "minimumValue": "0.0",
+                    "rangeClosure": "closed"
+                  }
+                ]
               }
             ]
           }
@@ -164,21 +124,7 @@
                 "default": true
               }
             ]
-          },
-          "additionalParameters": [
-            {
-              "role": "http://www.opengis.net/eoc/applicationContext/outputMetadata",
-              "parameters": [
-                {
-                  "_comment": "The Profile element allows to define a more specific format than the registered MIME Media Type (e.g. GeoTiff)",
-                  "name": "Profile",
-                  "values": [
-                    "http://www.opengis.net/eoc/formats/raster/GeoTiff"
-                  ]
-                }
-              ]
-            }
-          ]
+          }
         }
       ]
     },
@@ -193,9 +139,11 @@
   "immediateDeployment": true,
   "executionUnit": [
     {
-      "unit": {
-        "type": "docker",
-        "image": "docker.52north.org/eopad/snap-sentinel-2-ndvi:latest"
+      "type": "docker",
+      "image": "docker.52north.org/eopad/snap-sentinel-2-ndvi:latest",
+      "environment": {
+        "SCIHUB_USERNAME": "",
+        "SCIHUB_PASSWORD": ""
       }
     }
   ],

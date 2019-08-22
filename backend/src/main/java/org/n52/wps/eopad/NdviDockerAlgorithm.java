@@ -58,7 +58,8 @@ public class NdviDockerAlgorithm extends DockerAlgorithm {
     private String scihubUsername;
     private String scihubPassword;
 
-    public NdviDockerAlgorithm(DockerClient docker, ProcessImage image, Path storageLocation, String scihubUsername, String scihubPassword) {
+    public NdviDockerAlgorithm(DockerClient docker, ProcessImage image, Path storageLocation,
+                               String scihubUsername, String scihubPassword) {
         super(docker, image);
         this.storageLocation = storageLocation;
         this.scihubUsername = scihubUsername;

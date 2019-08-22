@@ -19,13 +19,13 @@ package org.n52.wps.eopad;
 
 import org.n52.faroe.annotation.Configurable;
 import org.n52.faroe.annotation.Setting;
+import org.n52.janmayen.lifecycle.Constructable;
 import org.n52.javaps.algorithm.AlgorithmRepository;
 import org.n52.javaps.algorithm.IAlgorithm;
 import org.n52.javaps.description.TypedProcessDescription;
 import org.n52.shetland.ogc.ows.OwsCode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.nio.file.Paths;
@@ -38,7 +38,7 @@ import java.util.stream.Collectors;
  * @author <a href="mailto:m.rieke@52north.org">Matthes Rieke</a>
  */
 @Configurable
-public class DockerAlgorithmRepository implements AlgorithmRepository, InitializingBean {
+public class DockerAlgorithmRepository implements AlgorithmRepository, Constructable {
 
     private static final Logger LOG = LoggerFactory.getLogger(DockerAlgorithmRepository.class);
 
@@ -66,7 +66,7 @@ public class DockerAlgorithmRepository implements AlgorithmRepository, Initializ
     }
 
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void init() {
         LOG.info("DockerAlgorithmRepository initialised");
     }
 
@@ -99,10 +99,12 @@ public class DockerAlgorithmRepository implements AlgorithmRepository, Initializ
         return this.getAlgorithm(id).isPresent();
     }
 
-    private IAlgorithm createDockerAlgorithm(ProcessImage i) {
+    private IAlgorithm createDockerAlgorithm(ProcessImage image) {
         // TODO currently hardwired!!
-        if (i.getName().equals("docker.52north.org/eopad/ndvi")) {
-            return new NdviDockerAlgorithm(this.processRegistry.getDocker(), i, Paths.get(this.dockerDataDirectory), scihubUsername, scihubPassword);
+        if (image.getName().equals("docker.52north.org/eopad/ndvi")) {
+            return new NdviDockerAlgorithm(this.processRegistry.getDocker(),
+                                           image,
+                                           Paths.get(this.dockerDataDirectory), scihubUsername, scihubPassword);
         }
 
         return null;
