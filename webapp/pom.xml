@@ -26,13 +26,37 @@
     <artifactId>eopad-parent</artifactId>
     <version>1.0.0-SNAPSHOT</version>
   </parent>
-  <artifactId>eopad-webapp</artifactId>
-  <name>Routing WPS Webapp</name>
+  <artifactId>webapp</artifactId>
+  <name>javaPS EOPAD Webapp</name>
   <packaging>war</packaging>
   <dependencies>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>eopad-backend</artifactId>
+      <artifactId>docker-backend</artifactId>
+      <scope>runtime</scope>
+      <!-- exclude these to not have duplicated snapshot dependencies -->
+      <exclusions>
+        <exclusion>
+          <groupId>org.n52.wps</groupId>
+          <artifactId>engine</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>catalog</artifactId>
+      <scope>runtime</scope>
+      <!-- exclude these to not have duplicated snapshot dependencies -->
+      <exclusions>
+        <exclusion>
+          <groupId>org.n52.wps</groupId>
+          <artifactId>engine</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>transactional</artifactId>
       <scope>runtime</scope>
       <!-- exclude these to not have duplicated snapshot dependencies -->
       <exclusions>
