@@ -16,32 +16,23 @@
  */
 package org.n52.javaps.docker;
 
-import com.github.dockerjava.api.DockerClient;
 import org.n52.janmayen.function.Predicates;
 
 import java.time.Duration;
 import java.util.Optional;
 
 public class DockerConfigImpl implements DockerConfig {
-
+    private String dataPath = "/data";
+    private String inputPath = "/data/inputs";
+    private String outputPath = "/data/outputs";
+    private String dockerHost;
     private String user;
     private String group;
     private Duration timeout;
-    private DockerClient client;
-    private static final String DATA_FOLDER = "/data";
-    private static final String INPUT_FOLDER = "/data/inputs";
-    private static final String OUTPUT_FOLDER = "/data/outputs";
+    private Environment environment;
+    private String javaPsVersion;
 
     public DockerConfigImpl() {
-    }
-
-    @Override
-    public DockerClient getClient() {
-        return client;
-    }
-
-    public void setClient(DockerClient client) {
-        this.client = client;
     }
 
     public DockerConfigImpl(String user, String group) {
@@ -79,27 +70,66 @@ public class DockerConfigImpl implements DockerConfig {
     }
 
     @Override
+    public String getJavaPsVersion() {
+        return javaPsVersion;
+    }
+
+    public void setJavaPsVersion(String javaPsVersion) {
+        this.javaPsVersion = javaPsVersion;
+    }
+
+    @Override
     public String getInputPath() {
-        return INPUT_FOLDER;
+        return inputPath;
+    }
+
+    public void setInputPath(String inputPath) {
+        this.inputPath = inputPath;
     }
 
     @Override
     public String getOutputPath() {
-        return OUTPUT_FOLDER;
+        return outputPath;
+    }
+
+    public void setOutputPath(String outputPath) {
+        this.outputPath = outputPath;
     }
 
     @Override
     public String getOutputPath(String file) {
-        return String.format("%s/%s", OUTPUT_FOLDER, file);
+        return String.format("%s/%s", outputPath, file);
     }
 
     @Override
     public String getInputPath(String file) {
-        return String.format("%s/%s", INPUT_FOLDER, file);
+        return String.format("%s/%s", inputPath, file);
     }
 
     @Override
     public String getDataPath() {
-        return DATA_FOLDER;
+        return dataPath;
+    }
+
+    public void setDataPath(String dataPath) {
+        this.dataPath = dataPath;
+    }
+
+    @Override
+    public Environment getGlobalEnvironment() {
+        return environment;
+    }
+
+    @Override
+    public String getDockerHost() {
+        return dockerHost;
+    }
+
+    public void setDockerHost(String dockerHost) {
+        this.dockerHost = dockerHost;
+    }
+
+    public void setEnvironment(Environment environment) {
+        this.environment = environment;
     }
 }

@@ -31,7 +31,7 @@ abstract class AbstractDockerProcessor<T, V> {
     }
 
     protected Environment getEnvironment() {
-        return config.getEnvironment();
+        return config.getGlobalEnvironment();
     }
 
     protected DockerClient getClient() {

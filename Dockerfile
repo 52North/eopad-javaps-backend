@@ -12,14 +12,14 @@ RUN mvn --batch-mode --errors --fail-fast \
 
 FROM jetty:jre8-alpine
 
-ARG JAVAPS_VERSION=1.0.0-SNAPSHOT
+ARG JAVAPS_VERSION=1.4.0-SNAPSHOT
 ENV JAVAPS_VERSION ${JAVAPS_VERSION}
 ENV JAVAPS_ROOT ${JETTY_BASE}/webapps/ROOT
 ENV JAVAPS_TMP ${JAVAPS_ROOT}/WEB-INF/tmp
 ENV JAVAPS_CONFIG ${JAVAPS_ROOT}/WEB-INF/config
 ENV JAVAPS_LIB ${JAVAPS_ROOT}/WEB-INF/lib
 
-COPY --from=BUILD /usr/src/app/wps-routing-webapp/target/routing-webapp-${JAVAPS_VERSION}/ /var/lib/jetty/webapps/ROOT
+COPY --from=BUILD /usr/src/app/webapp/target/webapp/ /var/lib/jetty/webapps/ROOT
 COPY etc/docker-log4j2.xml /var/lib/jetty/webapps/ROOT/WEB-INF/config/log4j2.xml
 COPY etc/docker-configuration.json /var/lib/jetty/webapps/ROOT/WEB-INF/config/configuration.json
 
@@ -42,7 +42,7 @@ VOLUME /var/lib/jetty/webapps/ROOT/WEB-INF/config
 ENV FAROE_CONFIGURATION ${JAVAPS_CONFIG}/configuration.json
 
 LABEL maintainer="Christian Autermann <c.autermann@52north.org>" \
-      org.opencontainers.image.title="52°North Routing WPS" \
+      org.opencontainers.image.title="52°North EOPAD WPS" \
       org.opencontainers.image.description="Next generation standardized web-based geo-processing" \
       org.opencontainers.image.licenses="Apache-2.0" \
       org.opencontainers.image.url="https://github.com/52North/javaPS" \
@@ -57,9 +57,6 @@ LABEL org.opencontainers.image.revision="${GIT_COMMIT}"
 
 ARG BUILD_DATE
 LABEL org.opencontainers.image.created="${BUILD_DATE}"
-
-ENV HERE_APP_CODE=
-ENV HERE_APP_ID=
 
 CMD [ "java", "-jar", "/usr/local/jetty/start.jar" ]
 ENTRYPOINT [ "/usr/local/bin/faroe-entrypoint.sh", "/docker-entrypoint.sh" ]

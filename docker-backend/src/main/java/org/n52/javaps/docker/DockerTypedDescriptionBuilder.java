@@ -55,6 +55,7 @@ public class DockerTypedDescriptionBuilder implements TypedDescriptionBuilder {
         this.literalTypeRepository = literalTypeRepository;
     }
 
+
     public void setDescriptionFactory(TypedProcessDescriptionFactory descriptionFactory) {
         this.descriptionFactory = Optional.ofNullable(descriptionFactory)
                                           .orElseGet(TypedProcessDescriptionFactory::instance);

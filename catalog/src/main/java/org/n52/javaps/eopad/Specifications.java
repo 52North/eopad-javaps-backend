@@ -14,34 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.n52.javaps.docker;
+package org.n52.javaps.eopad;
 
-import com.github.dockerjava.api.DockerClient;
-
-import java.time.Duration;
-import java.util.Optional;
-
-public interface DockerConfig {
-
-    Optional<String> getGroup();
-
-    Optional<String> getUser();
-
-    Optional<Duration> getTimeout();
-
-    String getInputPath();
-
-    String getInputPath(String file);
-
-    String getOutputPath();
-
-    String getOutputPath(String file);
-
-    String getDataPath();
-
-    Environment getGlobalEnvironment();
-
-    String getDockerHost();
-
-    String getJavaPsVersion();
+public interface Specifications {
+    String EOPAD_GEOJSON_CORE = "http://www.opengis.net/spec/eopad-geojson/1.0/req/core";
+    String OWC_GEOJSON_CORE = "http://www.opengis.net/spec/owc-geojson/1.0/req/core";
+    String EOPAD_GEOJSON_OGC_PROCESSES_API = "http://www.opengis.net/spec/eopad-geojson/1.0/req/ogc-processes-api";
+    String OWC_GEOJSON_WPS = "http://www.opengis.net/spec/owc-geojson/1.0/req/wps";
 }

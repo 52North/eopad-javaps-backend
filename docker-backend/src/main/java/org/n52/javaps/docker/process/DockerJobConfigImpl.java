@@ -16,11 +16,12 @@
  */
 package org.n52.javaps.docker.process;
 
+import com.github.dockerjava.api.DockerClient;
 import org.n52.javaps.description.TypedProcessDescription;
-import org.n52.javaps.docker.Environment;
-import org.n52.javaps.engine.ProcessExecutionContext;
 import org.n52.javaps.docker.DelegatingDockerConfig;
 import org.n52.javaps.docker.DockerConfig;
+import org.n52.javaps.docker.Environment;
+import org.n52.javaps.engine.ProcessExecutionContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,16 +31,19 @@ public class DockerJobConfigImpl extends DelegatingDockerConfig implements Docke
     private final Logger log;
     private final TypedProcessDescription description;
     private final ProcessExecutionContext context;
+    private final DockerClient dockerClient;
     private final Environment environment;
     private String helperContainerId;
     private String processContainerId;
     private String volumeId;
 
     public DockerJobConfigImpl(DockerConfig delegate,
+                               DockerClient dockerClient,
                                TypedProcessDescription description,
                                ProcessExecutionContext context,
                                Environment environment) {
         super(delegate);
+        this.dockerClient = Objects.requireNonNull(dockerClient);
         this.description = Objects.requireNonNull(description);
         this.context = Objects.requireNonNull(context);
         this.environment = Objects.requireNonNull(environment);
@@ -64,7 +68,12 @@ public class DockerJobConfigImpl extends DelegatingDockerConfig implements Docke
     }
 
     @Override
-    public Environment getEnvironment() {
+    public DockerClient getClient() {
+        return this.dockerClient;
+    }
+
+    @Override
+    public Environment getJobEnvironment() {
         return this.environment;
     }
 

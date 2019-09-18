@@ -14,34 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.n52.javaps.docker;
+package org.n52.javaps.eopad;
 
-import com.github.dockerjava.api.DockerClient;
+import okhttp3.MediaType;
 
-import java.time.Duration;
-import java.util.Optional;
-
-public interface DockerConfig {
-
-    Optional<String> getGroup();
-
-    Optional<String> getUser();
-
-    Optional<Duration> getTimeout();
-
-    String getInputPath();
-
-    String getInputPath(String file);
-
-    String getOutputPath();
-
-    String getOutputPath(String file);
-
-    String getDataPath();
-
-    Environment getGlobalEnvironment();
-
-    String getDockerHost();
-
-    String getJavaPsVersion();
+public interface MediaTypes {
+    String APPLICATION_OPENAPI_JSON_VERSION_3_0 = "application/openapi+json;version=3.0";
+    String APPLICATION_JSON = "application/json";
+    MediaType APPLICATION_GEO_JSON = MediaType.get("application/geo+json");
 }

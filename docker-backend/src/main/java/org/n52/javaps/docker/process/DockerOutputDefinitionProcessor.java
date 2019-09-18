@@ -24,7 +24,8 @@ import org.n52.shetland.ogc.wps.OutputDefinition;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DockerOutputDefinitionProcessor extends AbstractDockerProcessor<List<OutputDefinition>, List<DockerOutputInfo>> {
+public class DockerOutputDefinitionProcessor
+        extends AbstractDockerProcessor<List<OutputDefinition>, List<DockerOutputInfo>> {
     DockerOutputDefinitionProcessor(DockerJobConfig config) {
         super(config);
     }
@@ -42,8 +43,8 @@ public class DockerOutputDefinitionProcessor extends AbstractDockerProcessor<Lis
 
             Environment e = environment.withPrefix(Environment.getVariableName(outputDefinition.getId()));
             if (outputDescription.isGroup()) {
-                List<DockerOutputInfo> outputs = createOutputs(outputDescription.asGroup(), e, outputDefinition
-                                                                                                 .getOutputs());
+                List<DockerOutputInfo> outputs = createOutputs(outputDescription.asGroup(), e,
+                                                               outputDefinition.getOutputs());
                 outputInfos.add(new DockerOutputInfo(outputDefinition, outputDescription, outputs));
             } else {
                 String outputPath = getConfig().getOutputPath(e.getPrefix());

@@ -16,8 +16,6 @@
  */
 package org.n52.javaps.docker;
 
-import com.github.dockerjava.api.DockerClient;
-
 import java.time.Duration;
 import java.util.Objects;
 import java.util.Optional;
@@ -27,11 +25,6 @@ public class DelegatingDockerConfig implements DockerConfig {
 
     public DelegatingDockerConfig(DockerConfig delegate) {
         this.delegate = Objects.requireNonNull(delegate);
-    }
-
-    @Override
-    public DockerClient getClient() {
-        return delegate.getClient();
     }
 
     @Override
@@ -72,5 +65,20 @@ public class DelegatingDockerConfig implements DockerConfig {
     @Override
     public String getDataPath() {
         return delegate.getDataPath();
+    }
+
+    @Override
+    public Environment getGlobalEnvironment() {
+        return delegate.getGlobalEnvironment();
+    }
+
+    @Override
+    public String getDockerHost() {
+        return delegate.getDockerHost();
+    }
+
+    @Override
+    public String getJavaPsVersion() {
+        return delegate.getJavaPsVersion();
     }
 }

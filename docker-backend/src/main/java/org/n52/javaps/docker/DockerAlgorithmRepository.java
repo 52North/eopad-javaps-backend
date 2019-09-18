@@ -17,11 +17,10 @@
 
 package org.n52.javaps.docker;
 
+import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
-import org.n52.faroe.annotation.Configurable;
-import org.n52.faroe.annotation.Setting;
 import org.n52.janmayen.function.Predicates;
 import org.n52.javaps.algorithm.IAlgorithm;
 import org.n52.javaps.description.TypedProcessDescription;
@@ -41,23 +40,16 @@ import java.util.Optional;
  * @author <a href="mailto:m.rieke@52north.org">Matthes Rieke</a>
  * @author <a href="mailto:c.autermann@52north.org">Christian Autermann</a>
  */
-@Configurable
-@Repository
 public class DockerAlgorithmRepository extends AbstractTransactionalAlgorithmRepository {
     private static final Logger LOG = LoggerFactory.getLogger(DockerAlgorithmRepository.class);
     private static final String DEFAULT_DOCKER_HOST = "unix:///var/run/docker.sock";
-    private String dockerHost;
     private TypedDescriptionBuilder descriptionBuilder;
-    private DockerConfigImpl dockerConfig;
+    private DockerConfig dockerConfig;
+    private DockerClient dockerClient;
 
-    public DockerAlgorithmRepository() {
-        this.dockerConfig = new DockerConfigImpl();
-    }
-
-    @Setting("docker.host")
-    public void setDockerHost(String dockerHost) {
-        this.dockerHost = dockerHost;
-        LOG.info("using docker host {}", this.dockerHost);
+    @Autowired
+    public void setDockerConfig(DockerConfig dockerConfig) {
+        this.dockerConfig = dockerConfig;
     }
 
     @Autowired
@@ -69,11 +61,11 @@ public class DockerAlgorithmRepository extends AbstractTransactionalAlgorithmRep
     public void init() {
         DockerClientConfig config = DefaultDockerClientConfig
                                             .createDefaultConfigBuilder()
-                                            .withDockerHost(Optional.ofNullable(dockerHost)
+                                            .withDockerHost(Optional.ofNullable(dockerConfig.getDockerHost())
                                                                     .filter(Predicates.not(String::isEmpty))
                                                                     .orElse(DEFAULT_DOCKER_HOST))
                                             .build();
-        dockerConfig.setClient(DockerClientBuilder.getInstance(config).build());
+        dockerClient = DockerClientBuilder.getInstance(config).build();
         LOG.info("DockerProcessRegistry initialized.");
     }
 
@@ -84,9 +76,9 @@ public class DockerAlgorithmRepository extends AbstractTransactionalAlgorithmRep
 
     @Override
     public void destroy() {
-        if (dockerConfig != null && dockerConfig.getClient() != null) {
+        if (dockerClient != null) {
             try {
-                dockerConfig.getClient().close();
+                dockerClient.close();
             } catch (IOException e) {
                 LOG.error("error closing docker client", e);
             }
@@ -100,7 +92,7 @@ public class DockerAlgorithmRepository extends AbstractTransactionalAlgorithmRep
 
     @Override
     protected IAlgorithm createAlgorithm(ApplicationPackage applicationPackage) {
-        return new DockerAlgorithm(dockerConfig, descriptionBuilder, applicationPackage);
+        return new DockerAlgorithm(dockerConfig, dockerClient, descriptionBuilder, applicationPackage);
 
     }
 }

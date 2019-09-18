@@ -21,11 +21,39 @@
        xmlns:ctx="http://www.springframework.org/schema/context"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
-    <bean class="org.n52.javaps.docker.DockerDataHandler"/>
-    <bean class="org.n52.javaps.docker.DockerAlgorithmRepository"/>
-    <bean class="org.n52.javaps.docker.DockerTypedDescriptionBuilder"/>
-
-
     <ctx:annotation-config/>
+
+    <bean class="org.n52.javaps.docker.DockerAlgorithmRepository">
+        <property name="dockerConfig">
+            <bean class="org.n52.javaps.docker.DockerConfigImpl">
+                <property name="dockerHost" value="unix:///var/run/docker.sock"/>
+                <property name="dataPath" value="/data"/>
+                <property name="inputPath" value="/data/inputs"/>
+                <property name="outputPath" value="/data/outputs"/>
+                <property name="timeout" value="PT30M"/>
+                <property name="javaPsVersion" value="1.4.0"/>
+                <property name="environment">
+                    <bean class="org.n52.javaps.docker.Environment">
+                        <constructor-arg>
+                            <map>
+                                <entry key="SCIHUB_USERNAME" value="autermann"/>
+                                <entry key="SCIHUB_PASSWORD" value="7ciLZLY89gnEZmZ0eYlV"/>
+                            </map>
+                        </constructor-arg>
+                    </bean>
+                </property>
+            </bean>
+        </property>
+        <property name="descriptionBuilder">
+            <bean class="org.n52.javaps.docker.DockerTypedDescriptionBuilder">
+                <property name="descriptionFactory">
+                    <bean class="org.n52.javaps.description.impl.TypedProcessDescriptionFactory"/>
+                </property>
+            </bean>
+        </property>
+    </bean>
+
+    <bean class="org.n52.javaps.docker.DockerDataHandler"/>
+
 
 </beans>

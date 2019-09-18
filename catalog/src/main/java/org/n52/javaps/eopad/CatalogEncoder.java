@@ -14,34 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.n52.javaps.docker;
+package org.n52.javaps.eopad;
 
-import com.github.dockerjava.api.DockerClient;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.n52.shetland.ogc.wps.ap.ApplicationPackage;
+import org.n52.svalbard.encode.exception.EncodingException;
 
-import java.time.Duration;
-import java.util.Optional;
+public interface CatalogEncoder {
+    ObjectNode createProcessInsertion(ApplicationPackage applicationPackage)
+            throws EncodingException;
 
-public interface DockerConfig {
-
-    Optional<String> getGroup();
-
-    Optional<String> getUser();
-
-    Optional<Duration> getTimeout();
-
-    String getInputPath();
-
-    String getInputPath(String file);
-
-    String getOutputPath();
-
-    String getOutputPath(String file);
-
-    String getDataPath();
-
-    Environment getGlobalEnvironment();
-
-    String getDockerHost();
-
-    String getJavaPsVersion();
+    ObjectNode createServiceInsertion() throws EncodingException;
 }

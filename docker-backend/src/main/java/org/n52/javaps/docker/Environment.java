@@ -17,6 +17,7 @@
 package org.n52.javaps.docker;
 
 import org.n52.janmayen.function.Predicates;
+import org.n52.javaps.docker.util.MapDelegate;
 import org.n52.shetland.ogc.ows.OwsCode;
 
 import java.util.Arrays;
@@ -27,7 +28,7 @@ import java.util.Objects;
 
 import static java.util.stream.Collectors.joining;
 
-public class Environment {
+public class Environment extends MapDelegate<String, String> {
     public static final String MIME_TYPE = "MIME_TYPE";
     public static final String SCHEMA = "SCHEMA";
     public static final String ENCODING = "ENCODING";
@@ -37,6 +38,11 @@ public class Environment {
     public static final String OUTPUT = "OUTPUT";
     private final Map<String, String> values;
     private final String prefix;
+
+    @Override
+    protected Map<String, String> getDelegate() {
+        return values;
+    }
 
     public Environment() {
         this(null, null);
@@ -63,12 +69,17 @@ public class Environment {
         put(null, value);
     }
 
-    public void put(String key, Object value) {
+    public String put(String key, Object value) {
+        return put(key, value == null ? null : value.toString());
+    }
+
+    @Override
+    public String put(String key, String value) {
         if (!hasPrefix() && (key == null || key.isEmpty())) {
             throw new IllegalStateException("null or empty keys are only supported with prefix");
         }
 
-        this.values.put(join(prefix, key), value == null ? null : value.toString());
+        return this.values.put(join(prefix, key), value);
     }
 
     public boolean hasPrefix() {

@@ -16,6 +16,7 @@
  */
 package org.n52.javaps.docker.process;
 
+import com.github.dockerjava.api.DockerClient;
 import org.n52.javaps.description.TypedProcessDescription;
 import org.n52.javaps.docker.DockerConfig;
 import org.n52.javaps.docker.Environment;
@@ -25,11 +26,13 @@ import org.slf4j.Logger;
 public interface DockerJobConfig extends DockerConfig {
     Logger getLog();
 
+    DockerClient getClient();
+
     TypedProcessDescription getDescription();
 
     ProcessExecutionContext getContext();
 
-    Environment getEnvironment();
+    Environment getJobEnvironment();
 
     String getHelperContainerId();
 

@@ -16,5 +16,7 @@
  */
 package org.n52.javaps.eopad;
 
-public class EmptyFeature {
+public interface Operations {
+    String DEPLOY_PROCESS = "DeployProcess";
+    String DESCRIBE_PROCESS = "DescribeProcess";
 }

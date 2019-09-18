@@ -14,34 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.n52.javaps.docker;
+package org.n52.javaps.eopad;
 
-import com.github.dockerjava.api.DockerClient;
+import okhttp3.HttpUrl;
+import org.n52.shetland.ogc.wps.ap.ApplicationPackage;
 
-import java.time.Duration;
-import java.util.Optional;
+public interface Catalog {
+    HttpUrl getURL();
 
-public interface DockerConfig {
+    HttpUrl getURL(String id);
 
-    Optional<String> getGroup();
-
-    Optional<String> getUser();
-
-    Optional<Duration> getTimeout();
-
-    String getInputPath();
-
-    String getInputPath(String file);
-
-    String getOutputPath();
-
-    String getOutputPath(String file);
-
-    String getDataPath();
-
-    Environment getGlobalEnvironment();
-
-    String getDockerHost();
-
-    String getJavaPsVersion();
+    String getURL(ApplicationPackage applicationPackage);
 }
