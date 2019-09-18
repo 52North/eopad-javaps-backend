@@ -10,3 +10,4 @@ nb-configuration*.xml
 /nbproject/
 .factorypath
 .idea
+*.iml

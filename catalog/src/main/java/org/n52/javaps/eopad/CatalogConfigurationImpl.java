@@ -21,23 +21,34 @@ import org.n52.faroe.Validation;
 import org.n52.faroe.annotation.Configurable;
 import org.n52.faroe.annotation.Setting;
 import org.n52.iceland.service.ServiceSettings;
+import org.n52.janmayen.function.Predicates;
+import org.n52.janmayen.stream.Streams;
 import org.n52.javaps.transactional.TransactionalAlgorithmRepository;
 import org.n52.shetland.ogc.wps.ap.ApplicationPackage;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.net.URI;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static java.util.stream.Collectors.joining;
 
 @Configurable
 public class CatalogConfigurationImpl implements CatalogConfiguration {
     private HttpUrl serviceURL;
 
-    private Collection<TransactionalAlgorithmRepository> repositories = Collections.emptyList();
-    private Catalog catalog;
+    private final Collection<TransactionalAlgorithmRepository> repositories;
+    private final Catalog catalog;
+
+    public CatalogConfigurationImpl(Catalog catalog, Collection<TransactionalAlgorithmRepository> repositories) {
+        this.catalog = Objects.requireNonNull(catalog);
+        this.repositories = Objects.requireNonNull(repositories);
+    }
 
     @Override
     public Catalog getCatalog() {
@@ -49,13 +60,9 @@ public class CatalogConfigurationImpl implements CatalogConfiguration {
         return serviceURL;
     }
 
-    public void setCatalog(Catalog catalog) {
-        this.catalog = Objects.requireNonNull(catalog);
-    }
-
-    @Autowired(required = false)
-    public void setRepositories(Collection<TransactionalAlgorithmRepository> repositories) {
-        this.repositories = Objects.requireNonNull(repositories);
+    @Override
+    public HttpUrl getProcessUrl(String id) {
+        return getServiceURL().resolve("processes/").resolve(id);
     }
 
     @Setting(ServiceSettings.SERVICE_URL)
@@ -74,4 +81,17 @@ public class CatalogConfigurationImpl implements CatalogConfiguration {
                          .filter(Optional::isPresent).map(Optional::get);
     }
 
+    @Override
+    public String getServiceIdentifier() {
+        return asIdentifier(getServiceURL());
+    }
+
+    private String asIdentifier(HttpUrl url) {
+        List<String> domain = Streams.stream(url.host().split("\\."))
+                                     .collect(Collectors.toList());
+        Collections.reverse(domain);
+        Stream<String> path = Arrays.stream(url.encodedPath().split("/"))
+                                    .filter(Predicates.not(String::isEmpty));
+        return Stream.concat(domain.stream(), path).collect(joining("."));
+    }
 }

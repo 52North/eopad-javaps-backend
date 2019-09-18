@@ -33,10 +33,6 @@ public interface JsonConstants {
     String OPERATIONS = "operations";
     String METHOD = "method";
     String REQUEST = "request";
-    String PROCESSES = "Processes";
-    String CONFORMANCE = "Conformance";
-    String SERVICE = "Service";
-    String LANDING_PAGE = "LandingPage";
     String FEATURE = "Feature";
     String PROPERTIES = "properties";
     String HOSTS = "hosts";

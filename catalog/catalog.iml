@@ -29,6 +29,7 @@
           <file>file://$MAVEN_REPOSITORY$/org/n52/arctic-sea/svalbard/7.2.0-SNAPSHOT/svalbard-7.2.0-SNAPSHOT.jar</file>
           <file>jar://$MAVEN_REPOSITORY$/org/n52/arctic-sea/svalbard-json-common/7.2.0-SNAPSHOT/svalbard-json-common-7.2.0-SNAPSHOT.jar!/svalbard-json-common-context.xml</file>
           <file>file://$MAVEN_REPOSITORY$/org/n52/arctic-sea/svalbard-json-common/7.2.0-SNAPSHOT/svalbard-json-common-7.2.0-SNAPSHOT.jar</file>
+          <file>file://$MODULE_DIR$/src/main/resources/components/deimos.xml</file>
         </fileset>
       </configuration>
     </facet>

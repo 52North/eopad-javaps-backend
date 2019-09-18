@@ -20,9 +20,9 @@ import okhttp3.HttpUrl;
 import org.n52.shetland.ogc.wps.ap.ApplicationPackage;
 
 public class CatalogImpl implements Catalog {
-    private HttpUrl url;
+    private final HttpUrl url;
 
-    public void setUrl(String url) {
+    public CatalogImpl(String url) {
         this.url = HttpUrl.get(url);
     }
 

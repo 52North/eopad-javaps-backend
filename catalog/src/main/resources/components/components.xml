@@ -21,26 +21,6 @@
        xmlns:ctx="http://www.springframework.org/schema/context"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
-
     <ctx:annotation-config/>
-
     <ctx:component-scan base-package="org.n52.javaps.eopad"/>
-
-    <bean id="gmuCatalogListener" class="org.n52.javaps.eopad.CatalogListener">
-        <property name="config" ref="gmuCatalogConfiguration"/>
-        <property name="catalogEncoder">
-            <bean class="org.n52.javaps.eopad.CatalogEncoderImpl">
-                <property name="config" ref="gmuCatalogConfiguration"/>
-            </bean>
-        </property>
-    </bean>
-    <bean id="gmuCatalogConfiguration" class="org.n52.javaps.eopad.CatalogConfigurationImpl">
-        <property name="catalog">
-            <bean class="org.n52.javaps.eopad.CatalogImpl">
-                <property name="url" value="https://cloud.csiss.gmu.edu/ows15/geonet/rest3a/ogc/cat3a/"/>
-            </bean>
-        </property>
-    </bean>
-
-
 </beans>

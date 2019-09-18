@@ -30,7 +30,7 @@ public class OkHttpConfiguration {
 
     @Bean
     public OkHttpClient client() {
-        return new OkHttpClient.Builder().followRedirects(true).followSslRedirects(true).addInterceptor(chain -> {
+        return new OkHttpClient.Builder().addInterceptor(chain -> {
             Request request = chain.request();
             Response response = chain.proceed(request);
             LOG.info("{} {} {}", request.method(), request.url(), response.code());

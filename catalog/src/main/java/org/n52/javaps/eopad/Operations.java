@@ -19,4 +19,8 @@ package org.n52.javaps.eopad;
 public interface Operations {
     String DEPLOY_PROCESS = "DeployProcess";
     String DESCRIBE_PROCESS = "DescribeProcess";
+    String LANDING_PAGE = "LandingPage";
+    String SERVICE = "Service";
+    String CONFORMANCE = "Conformance";
+    String PROCESSES = "Processes";
 }

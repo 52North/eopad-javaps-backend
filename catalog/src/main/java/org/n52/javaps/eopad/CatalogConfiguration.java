@@ -17,7 +17,10 @@
 package org.n52.javaps.eopad;
 
 import okhttp3.HttpUrl;
+import org.n52.shetland.ogc.ows.OwsCode;
+import org.n52.shetland.ogc.wps.ProcessOffering;
 import org.n52.shetland.ogc.wps.ap.ApplicationPackage;
+import org.n52.shetland.ogc.wps.description.ProcessDescription;
 
 import java.util.stream.Stream;
 
@@ -26,5 +29,25 @@ public interface CatalogConfiguration {
 
     HttpUrl getServiceURL();
 
+    HttpUrl getProcessUrl(String id);
+
+    default HttpUrl getProcessUrl(OwsCode id) {
+        return getProcessUrl(id.getValue());
+    }
+
+    default HttpUrl getProcessUrl(ProcessDescription description) {
+        return getProcessUrl(description.getId());
+    }
+
+    default HttpUrl getProcessUrl(ProcessOffering offering) {
+        return getProcessUrl(offering.getProcessDescription());
+    }
+
+    default HttpUrl getProcessUrl(ApplicationPackage applicationPackage) {
+        return getProcessUrl(applicationPackage.getProcessDescription());
+    }
+
     Stream<ApplicationPackage> getApplicationPackages();
+
+    String getServiceIdentifier();
 }
