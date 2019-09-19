@@ -62,6 +62,11 @@ public abstract class MapDelegate<K, V> implements Map<K, V> {
     }
 
     @Override
+    public boolean remove(Object key, Object value) {
+        return getDelegate().remove(key, value);
+    }
+
+    @Override
     public void putAll(Map<? extends K, ? extends V> m) {
         getDelegate().putAll(m);
     }
@@ -114,11 +119,6 @@ public abstract class MapDelegate<K, V> implements Map<K, V> {
     @Override
     public V putIfAbsent(K key, V value) {
         return getDelegate().putIfAbsent(key, value);
-    }
-
-    @Override
-    public boolean remove(Object key, Object value) {
-        return getDelegate().remove(key, value);
     }
 
     @Override

@@ -27,6 +27,10 @@ public class DelegatingDockerConfig implements DockerConfig {
         this.delegate = Objects.requireNonNull(delegate);
     }
 
+    protected DockerConfig getDelegate() {
+        return delegate;
+    }
+
     @Override
     public Optional<String> getGroup() {
         return delegate.getGroup();

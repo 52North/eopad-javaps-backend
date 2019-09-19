@@ -62,13 +62,26 @@ public class CatalogConfigurationImpl implements CatalogConfiguration {
 
     @Override
     public HttpUrl getProcessUrl(String id) {
-        return getServiceURL().resolve("processes/").resolve(id);
+        HttpUrl resolve = getServiceURL().resolve("processes/");
+        if (resolve == null) {
+            throw new IllegalArgumentException();
+        }
+        return resolve.resolve(id);
     }
 
     @Setting(ServiceSettings.SERVICE_URL)
     public void setServiceURL(URI serviceURL) {
         Validation.notNull("serviceURL", serviceURL);
-        this.serviceURL = HttpUrl.get(serviceURL).resolve("./rest").newBuilder().query(null).build();
+        HttpUrl httpUrl = HttpUrl.get(serviceURL);
+        if (httpUrl == null) {
+            throw new IllegalArgumentException();
+        }
+        httpUrl = httpUrl.resolve("./rest");
+        if (httpUrl == null) {
+            throw new IllegalArgumentException();
+        }
+        HttpUrl.Builder builder = httpUrl.newBuilder();
+        this.serviceURL = builder.query(null).build();
     }
 
     @Override

@@ -20,6 +20,7 @@ import okhttp3.HttpUrl;
 import org.n52.shetland.ogc.wps.ap.ApplicationPackage;
 
 public class CatalogImpl implements Catalog {
+    private static final String SERVICE = "service";
     private final HttpUrl url;
 
     public CatalogImpl(String url) {
@@ -28,12 +29,12 @@ public class CatalogImpl implements Catalog {
 
     @Override
     public HttpUrl getURL() {
-        return url.newBuilder().addPathSegment("service").build();
+        return url.newBuilder().addPathSegment(SERVICE).build();
     }
 
     @Override
     public HttpUrl getURL(String id) {
-        return url.newBuilder().addPathSegment("service").addPathSegment(id).build();
+        return url.newBuilder().addPathSegment(SERVICE).addPathSegment(id).build();
     }
 
     @Override

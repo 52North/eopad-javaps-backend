@@ -16,8 +16,6 @@
  */
 package org.n52.javaps.docker;
 
-import com.github.dockerjava.api.DockerClient;
-
 import java.time.Duration;
 import java.util.Optional;
 

@@ -61,10 +61,6 @@
             <artifactId>shetland</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.n52.arctic-sea</groupId>
-            <artifactId>faroe-annotations</artifactId>
-        </dependency>
-        <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-beans</artifactId>
         </dependency>
@@ -141,6 +137,16 @@
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
+            <version>2.1.8.RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.spotbugs</groupId>
+            <artifactId>spotbugs-annotations</artifactId>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 </project>

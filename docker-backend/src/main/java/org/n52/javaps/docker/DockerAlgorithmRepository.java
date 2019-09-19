@@ -18,55 +18,39 @@
 package org.n52.javaps.docker;
 
 import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.core.DefaultDockerClientConfig;
-import com.github.dockerjava.core.DockerClientBuilder;
-import com.github.dockerjava.core.DockerClientConfig;
-import org.n52.janmayen.function.Predicates;
 import org.n52.javaps.algorithm.IAlgorithm;
 import org.n52.javaps.description.TypedProcessDescription;
 import org.n52.javaps.docker.process.DockerAlgorithm;
 import org.n52.javaps.transactional.AbstractTransactionalAlgorithmRepository;
 import org.n52.shetland.ogc.wps.ap.ApplicationPackage;
 import org.n52.shetland.ogc.wps.ap.DockerExecutionUnit;
+import org.n52.shetland.ogc.wps.description.ProcessDescription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.io.IOException;
-import java.util.Optional;
 
 /**
  * @author <a href="mailto:m.rieke@52north.org">Matthes Rieke</a>
  * @author <a href="mailto:c.autermann@52north.org">Christian Autermann</a>
  */
+@Repository
 public class DockerAlgorithmRepository extends AbstractTransactionalAlgorithmRepository {
     private static final Logger LOG = LoggerFactory.getLogger(DockerAlgorithmRepository.class);
-    private static final String DEFAULT_DOCKER_HOST = "unix:///var/run/docker.sock";
-    private TypedDescriptionBuilder descriptionBuilder;
-    private DockerConfig dockerConfig;
-    private DockerClient dockerClient;
+
+    private final TypedDescriptionBuilder descriptionBuilder;
+    private final DockerConfig dockerConfig;
+    private final DockerClient dockerClient;
 
     @Autowired
-    public void setDockerConfig(DockerConfig dockerConfig) {
-        this.dockerConfig = dockerConfig;
-    }
-
-    @Autowired
-    public void setDescriptionBuilder(TypedDescriptionBuilder descriptionBuilder) {
+    public DockerAlgorithmRepository(DockerConfig dockerConfig,
+                                     DockerClient dockerClient,
+                                     TypedDescriptionBuilder descriptionBuilder) {
         this.descriptionBuilder = descriptionBuilder;
-    }
-
-    @Override
-    public void init() {
-        DockerClientConfig config = DefaultDockerClientConfig
-                                            .createDefaultConfigBuilder()
-                                            .withDockerHost(Optional.ofNullable(dockerConfig.getDockerHost())
-                                                                    .filter(Predicates.not(String::isEmpty))
-                                                                    .orElse(DEFAULT_DOCKER_HOST))
-                                            .build();
-        dockerClient = DockerClientBuilder.getInstance(config).build();
-        LOG.info("DockerProcessRegistry initialized.");
+        this.dockerConfig = dockerConfig;
+        this.dockerClient = dockerClient;
     }
 
     @Override
@@ -87,7 +71,8 @@ public class DockerAlgorithmRepository extends AbstractTransactionalAlgorithmRep
 
     @Override
     protected TypedProcessDescription createProcessDescription(ApplicationPackage applicationPackage) {
-        return descriptionBuilder.createDescription(applicationPackage.getProcessDescription().getProcessDescription());
+        ProcessDescription description = applicationPackage.getProcessDescription().getProcessDescription();
+        return descriptionBuilder.createDescription(description);
     }
 
     @Override

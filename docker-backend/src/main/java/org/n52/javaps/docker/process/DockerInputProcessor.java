@@ -64,7 +64,7 @@ public class DockerInputProcessor extends AbstractDockerProcessor<ProcessInputs,
     @Override
     public Void process(ProcessInputs inputs) throws ExecutionException {
         try {
-            createInputs(getDescription(), getEnvironment().withPrefix(Environment.INPUT), inputs);
+            createInputs(getDescription(), getJobEnvironment().withPrefix(Environment.INPUT), inputs);
         } catch (IOException | EncodingException e) {
             throw new ExecutionException("error creating inputs", e);
         }
@@ -160,11 +160,11 @@ public class DockerInputProcessor extends AbstractDockerProcessor<ProcessInputs,
             tarOutput.write(payload);
             tarOutput.closeArchiveEntry();
         }
-        copyArchiveToContainerCmd().withRemotePath(getConfig().getInputPath())
+        copyArchiveToContainerCmd().withRemotePath(getInputPath())
                                    .withTarInputStream(new ByteArrayInputStream(baos.toByteArray()))
                                    .exec();
 
-        environment.put(getConfig().getInputPath(name));
+        environment.put(getInputPath(name));
         createFormat(environment, data.getFormat());
     }
 

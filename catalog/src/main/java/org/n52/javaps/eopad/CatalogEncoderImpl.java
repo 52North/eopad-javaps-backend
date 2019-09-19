@@ -19,6 +19,7 @@ package org.n52.javaps.eopad;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import okhttp3.HttpUrl;
 import org.n52.faroe.annotation.Configurable;
 import org.n52.janmayen.Json;
 import org.n52.janmayen.http.HTTPMethods;
@@ -36,7 +37,10 @@ import java.util.Objects;
 
 @Configurable
 public class CatalogEncoderImpl implements CatalogEncoder {
-
+    private static final String DATA_HREF = "data:";
+    private static final String PROCESSES_PATH = "processes/";
+    private static final String CONFORMANCE_PATH = "conformance/";
+    private static final String API_PATH = "api/";
     private final EncoderRepository encoderRepository;
     private final Engine engine;
     private final CatalogConfiguration config;
@@ -72,7 +76,7 @@ public class CatalogEncoderImpl implements CatalogEncoder {
                                          .put(JsonConstants.CODE, Operations.DEPLOY_PROCESS)
                                          .put(JsonConstants.METHOD, HTTPMethods.POST)
                                          .put(JsonConstants.TYPE, MediaTypes.APPLICATION_JSON)
-                                         .put(JsonConstants.HREF, "data:");
+                                         .put(JsonConstants.HREF, DATA_HREF);
         ObjectNode request = operation.putObject(JsonConstants.REQUEST);
         request.put(JsonConstants.TYPE, MediaTypes.APPLICATION_JSON)
                .set(JsonConstants.CONTENT, content);
@@ -95,10 +99,8 @@ public class CatalogEncoderImpl implements CatalogEncoder {
         ArrayNode profiles = links.putArray(JsonConstants.PROFILES);
         profiles.addObject().put(JsonConstants.HREF, Specifications.OWC_GEOJSON_CORE);
         profiles.addObject().put(JsonConstants.HREF, Specifications.EOPAD_GEOJSON_CORE);
-        // TODO hosts links
 
         ArrayNode hosts = links.putArray(JsonConstants.HOSTS);
-
         config.getApplicationPackages().forEach(ap -> hosts.addObject()
                                                            .put(JsonConstants.HREF, config.getCatalog().getURL(ap))
                                                            .put(JsonConstants.TYPE, MediaTypes.APPLICATION_JSON)
@@ -119,25 +121,25 @@ public class CatalogEncoderImpl implements CatalogEncoder {
         operations.addObject()
                   .put(JsonConstants.CODE, Operations.SERVICE)
                   .put(JsonConstants.METHOD, HTTPMethods.GET)
-                  .put(JsonConstants.HREF, config.getServiceURL().resolve("api/").toString())
+                  .put(JsonConstants.HREF, getRootUrl(API_PATH))
                   .put(JsonConstants.TYPE, MediaTypes.APPLICATION_OPENAPI_JSON_VERSION_3_0);
 
         operations.addObject()
                   .put(JsonConstants.CODE, Operations.CONFORMANCE)
                   .put(JsonConstants.METHOD, HTTPMethods.GET)
-                  .put(JsonConstants.HREF, config.getServiceURL().resolve("conformance/").toString())
+                  .put(JsonConstants.HREF, getRootUrl(CONFORMANCE_PATH))
                   .put(JsonConstants.TYPE, MediaTypes.APPLICATION_JSON);
 
         operations.addObject()
                   .put(JsonConstants.CODE, Operations.PROCESSES)
                   .put(JsonConstants.METHOD, HTTPMethods.GET)
-                  .put(JsonConstants.HREF, config.getServiceURL().resolve("processes/").toString())
+                  .put(JsonConstants.HREF, getRootUrl(PROCESSES_PATH))
                   .put(JsonConstants.TYPE, MediaTypes.APPLICATION_JSON);
 
         operations.addObject()
                   .put(JsonConstants.CODE, Operations.DEPLOY_PROCESS)
                   .put(JsonConstants.METHOD, HTTPMethods.POST)
-                  .put(JsonConstants.HREF, config.getServiceURL().resolve("processes/").toString())
+                  .put(JsonConstants.HREF, getRootUrl(PROCESSES_PATH))
                   .put(JsonConstants.TYPE, MediaTypes.APPLICATION_JSON)
                   .putObject(JsonConstants.REQUEST).put(JsonConstants.TYPE, MediaTypes.APPLICATION_JSON);
 
@@ -151,6 +153,14 @@ public class CatalogEncoderImpl implements CatalogEncoder {
                       .set(JsonConstants.CONTENT, content);
         }
         return root;
+    }
+
+    private String getRootUrl(String path) {
+        HttpUrl url = config.getServiceURL().resolve(path);
+        if (url == null) {
+            throw new IllegalArgumentException();
+        }
+        return url.toString();
     }
 
     private String getServiceTitle() {
@@ -175,6 +185,6 @@ public class CatalogEncoderImpl implements CatalogEncoder {
     private Encoder<JsonNode, ApplicationPackage> getApplicationPackageEncoder() {
         return encoderRepository
                        .<JsonNode, ApplicationPackage>tryGetEncoder(new JSONEncoderKey(ApplicationPackage.class))
-                       .orElseThrow(() -> new RuntimeException("no process offering encoder found"));
+                       .orElseThrow(() -> new RuntimeException("no application package encoder found"));
     }
 }

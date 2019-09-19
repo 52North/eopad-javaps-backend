@@ -16,38 +16,14 @@
  */
 package org.n52.javaps.docker.process;
 
-import com.github.dockerjava.api.DockerClient;
 import org.n52.javaps.algorithm.ExecutionException;
-import org.n52.javaps.description.TypedProcessDescription;
 import org.n52.javaps.docker.Environment;
 import org.n52.shetland.ogc.wps.Format;
-import org.slf4j.Logger;
 
-abstract class AbstractDockerProcessor<T, V> {
-    private final DockerJobConfig config;
+public abstract class AbstractDockerProcessor<T, V> extends DelegatingDockerJobConfig {
 
     protected AbstractDockerProcessor(DockerJobConfig config) {
-        this.config = config;
-    }
-
-    protected Environment getEnvironment() {
-        return config.getGlobalEnvironment();
-    }
-
-    protected DockerClient getClient() {
-        return config.getClient();
-    }
-
-    protected DockerJobConfig getConfig() {
-        return config;
-    }
-
-    protected Logger getLog() {
-        return config.getLog();
-    }
-
-    protected TypedProcessDescription getDescription() {
-        return config.getDescription();
+        super(config);
     }
 
     protected void createFormat(Environment environment, Format format) {

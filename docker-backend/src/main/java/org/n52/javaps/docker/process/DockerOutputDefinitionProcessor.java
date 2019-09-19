@@ -32,7 +32,7 @@ public class DockerOutputDefinitionProcessor
 
     @Override
     public List<DockerOutputInfo> process(List<OutputDefinition> outputDefinitions) {
-        return createOutputs(getDescription(), getEnvironment().withPrefix(Environment.OUTPUT), outputDefinitions);
+        return createOutputs(getDescription(), getJobEnvironment().withPrefix(Environment.OUTPUT), outputDefinitions);
     }
 
     private List<DockerOutputInfo> createOutputs(TypedProcessOutputDescriptionContainer description,
@@ -47,7 +47,7 @@ public class DockerOutputDefinitionProcessor
                                                                outputDefinition.getOutputs());
                 outputInfos.add(new DockerOutputInfo(outputDefinition, outputDescription, outputs));
             } else {
-                String outputPath = getConfig().getOutputPath(e.getPrefix());
+                String outputPath = getOutputPath(e.getPrefix());
                 e.put(outputPath);
 
                 outputInfos.add(new DockerOutputInfo(outputDefinition, outputDescription, outputPath));

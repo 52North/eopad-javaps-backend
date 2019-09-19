@@ -43,22 +43,20 @@ import org.n52.shetland.ogc.wps.description.ProcessDescription;
 import org.n52.shetland.ogc.wps.description.ProcessInputDescription;
 import org.n52.shetland.ogc.wps.description.ProcessOutputDescription;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
-import java.util.Optional;
+import java.util.Objects;
 
+@Component
 public class DockerTypedDescriptionBuilder implements TypedDescriptionBuilder {
-    private LiteralTypeRepository literalTypeRepository;
-    private TypedProcessDescriptionFactory descriptionFactory = TypedProcessDescriptionFactory.instance();
+    private final LiteralTypeRepository literalTypeRepository;
+    private final TypedProcessDescriptionFactory descriptionFactory;
 
     @Autowired
-    public void setLiteralTypeRepository(LiteralTypeRepository literalTypeRepository) {
-        this.literalTypeRepository = literalTypeRepository;
-    }
-
-
-    public void setDescriptionFactory(TypedProcessDescriptionFactory descriptionFactory) {
-        this.descriptionFactory = Optional.ofNullable(descriptionFactory)
-                                          .orElseGet(TypedProcessDescriptionFactory::instance);
+    public DockerTypedDescriptionBuilder(LiteralTypeRepository literalTypeRepository,
+                                         TypedProcessDescriptionFactory descriptionFactory) {
+        this.literalTypeRepository = Objects.requireNonNull(literalTypeRepository);
+        this.descriptionFactory = Objects.requireNonNull(descriptionFactory);
     }
 
     @Override

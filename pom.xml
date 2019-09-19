@@ -65,15 +65,13 @@
     <properties>
         <jts-version>1.16.1</jts-version>
         <retrofit-version>2.6.1</retrofit-version>
-        <springboot-version>2.1.10.RELEASE</springboot-version>
+        <springboot-version>2.1.8.RELEASE</springboot-version>
         <swagger-codegen-version>3.0.8</swagger-codegen-version>
         <swagger-annotations-version>1.5.13</swagger-annotations-version>
         <wps-version>1.4.0-SNAPSHOT</wps-version>
         <slf4j-version>1.7.26</slf4j-version>
         <jackson-version>2.9.9</jackson-version>
         <spring-version>5.1.9.RELEASE</spring-version>
-        <springdata-version>2.1.10.RELEASE</springdata-version>
-        <mongo-version>3.11.0</mongo-version>
         <arctic-sea-version>7.2.0-SNAPSHOT</arctic-sea-version>
         <docker-java-version>3.1.5</docker-java-version>
     </properties>
@@ -143,6 +141,16 @@
                 <groupId>org.n52.arctic-sea</groupId>
                 <artifactId>shetland</artifactId>
                 <version>${arctic-sea-version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.apache.jena</groupId>
+                        <artifactId>jena-core</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>org.apache.jena</groupId>
+                        <artifactId>jena-arq</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.n52.arctic-sea</groupId>
@@ -162,6 +170,11 @@
             <dependency>
                 <groupId>org.n52.arctic-sea</groupId>
                 <artifactId>iceland</artifactId>
+                <version>${arctic-sea-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.n52.arctic-sea</groupId>
+                <artifactId>faroe-json</artifactId>
                 <version>${arctic-sea-version}</version>
             </dependency>
             <dependency>
@@ -317,17 +330,7 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-autoconfigure</artifactId>
-                <version>${springboot-version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.data</groupId>
-                <artifactId>spring-data-commons</artifactId>
-                <version>${springdata-version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.data</groupId>
-                <artifactId>spring-data-mongodb</artifactId>
-                <version>${springdata-version}</version>
+                <version>2.1.8.RELEASE</version>
             </dependency>
             <dependency>
                 <groupId>com.squareup.retrofit2</groupId>
@@ -362,6 +365,21 @@
             <dependency>
                 <groupId>org.n52.wps</groupId>
                 <artifactId>engine</artifactId>
+                <version>${wps-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.n52.wps</groupId>
+                <artifactId>kvp</artifactId>
+                <version>${wps-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.n52.wps</groupId>
+                <artifactId>service</artifactId>
+                <version>${wps-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.n52.wps</groupId>
+                <artifactId>xml</artifactId>
                 <version>${wps-version}</version>
             </dependency>
             <dependency>

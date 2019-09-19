@@ -90,7 +90,7 @@ public class DockerOutputProcessor extends AbstractDockerProcessor<List<DockerOu
     private void readLiteralOutput(DockerOutputInfo outputInfo, ProcessOutputs outputs)
             throws DecodingException, IOException {
         byte[] bytes = copyFile(containerId, outputInfo.getPath());
-        String value = bytes == null ? new String(bytes, StandardCharsets.UTF_8) : "";
+        String value = bytes == null ? "" : new String(bytes, StandardCharsets.UTF_8);
         LiteralType<?> literalType = outputInfo.getDescription().asLiteral().getType();
         LiteralData data = literalType.parseToBinding(value);
         outputs.put(outputInfo.getDescription().getId(), data);

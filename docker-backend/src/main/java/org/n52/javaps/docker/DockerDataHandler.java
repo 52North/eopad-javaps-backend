@@ -23,6 +23,7 @@ import org.n52.javaps.io.EncodingException;
 import org.n52.javaps.io.InputHandler;
 import org.n52.javaps.io.OutputHandler;
 import org.n52.shetland.ogc.wps.Format;
+import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -31,18 +32,21 @@ import java.io.InputStream;
 import java.util.Collections;
 import java.util.Set;
 
+@Component
 public class DockerDataHandler implements InputHandler, OutputHandler {
+
+    private static final int BUFFER_SIZE = 16384;
+
     @Override
     public Data<?> parse(TypedProcessInputDescription<?> description, InputStream input, Format format)
             throws IOException {
-        try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
+        try (ByteArrayOutputStream output = new ByteArrayOutputStream()) {
             int n;
-            byte[] buffer = new byte[16384];
-
+            byte[] buffer = new byte[BUFFER_SIZE];
             while ((n = input.read(buffer, 0, buffer.length)) != -1) {
-                baos.write(buffer, 0, n);
+                output.write(buffer, 0, n);
             }
-            return new DockerData(baos.toByteArray(), format);
+            return new DockerData(output.toByteArray(), format);
         }
     }
 

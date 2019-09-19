@@ -8,7 +8,8 @@ COPY . /usr/src/app
 
 RUN mvn --batch-mode --errors --fail-fast \
       --define maven.javadoc.skip=true \
-      --define skipTests=true install
+      --define maven.test.skip=true \
+      install
 
 FROM jetty:jre8-alpine
 
@@ -45,10 +46,10 @@ LABEL maintainer="Christian Autermann <c.autermann@52north.org>" \
       org.opencontainers.image.title="52°North EOPAD WPS" \
       org.opencontainers.image.description="Next generation standardized web-based geo-processing" \
       org.opencontainers.image.licenses="Apache-2.0" \
-      org.opencontainers.image.url="https://github.com/52North/javaPS" \
+      org.opencontainers.image.url="https://github.com/52North/eopad-javaps-backend" \
       org.opencontainers.image.vendor="52°North GmbH" \
       org.opencontainers.image.source="https://github.com/52north/javaPS.git" \
-      org.opencontainers.image.documentation="https://github.com/52North/javaPS/blob/develop/README.md" \
+      org.opencontainers.image.documentation="https://github.com/52North/eopad-javaps-backend/blob/master/README.md" \
       org.opencontainers.image.version="${JAVAPS_VERSION}" \
       org.opencontainers.image.authors="Christian Autermann <c.autermann@52north.org>"
 

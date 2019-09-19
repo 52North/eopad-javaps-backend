@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 import static java.util.stream.Collectors.joining;
 
@@ -39,11 +40,6 @@ public class Environment extends MapDelegate<String, String> {
     private final Map<String, String> values;
     private final String prefix;
 
-    @Override
-    protected Map<String, String> getDelegate() {
-        return values;
-    }
-
     public Environment() {
         this(null, null);
     }
@@ -53,8 +49,13 @@ public class Environment extends MapDelegate<String, String> {
     }
 
     private Environment(String prefix, Map<String, String> values) {
-        this.values = Objects.requireNonNull(values);
+        this.values = Optional.ofNullable(values).orElseGet(HashMap::new);
         this.prefix = prefix;
+    }
+
+    @Override
+    protected Map<String, String> getDelegate() {
+        return values;
     }
 
     public Environment withPrefix(Object prefix) {
