@@ -65,7 +65,7 @@ public class CatalogListener implements TransactionalAlgorithmRepositoryListener
     @Override
     public void destroy() {
         try {
-            client.delete(config.getServiceURL().toString());
+            client.delete(config.getServiceIdentifier());
         } catch (IOException e) {
             LOG.error("Error deleting service", e);
         }

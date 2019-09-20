@@ -18,6 +18,7 @@ package org.n52.javaps.eopad;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -44,8 +45,7 @@ public class CatalogClientImpl implements CatalogClient {
 
     @Override
     public void updateOrInsert(JsonNode node) throws IOException {
-        String id = node.path(JsonConstants.PROPERTIES).path(JSONConstants.IDENTIFIER).textValue();
-        if (exists(id)) {
+        if (exists(getId(node))) {
             update(node);
         } else {
             insert(node);
@@ -54,7 +54,10 @@ public class CatalogClientImpl implements CatalogClient {
 
     @Override
     public void delete(String id) throws IOException {
-        Request request = new Request.Builder().delete().url(config.getCatalog().getURL(id)).build();
+        Request request = new Request.Builder().delete().url(getURL(id))
+                                               // GMU catalog requires this header...
+                                               .addHeader(HTTPHeaders.ACCEPT, MediaTypes.APPLICATION_GEO_JSON)
+                                               .build();
         try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful() && response.code() != 404) {
                 throw asException(response);
@@ -64,11 +67,11 @@ public class CatalogClientImpl implements CatalogClient {
 
     @Override
     public void update(JsonNode content) throws IOException {
-        Request request = new Request.Builder()
-                                  .put(asRequestBody(content))
-                                  .url(config.getCatalog().getURL(content.path(JsonConstants.ID).textValue()))
-                                  .addHeader(HTTPHeaders.CONTENT_TYPE, MediaTypes.APPLICATION_GEO_JSON.toString())
-                                  .build();
+        Request request = new Request.Builder().put(asRequestBody(content)).url(getURL(content))
+                                               // GMU catalog requires this header...
+                                               .addHeader(HTTPHeaders.ACCEPT, MediaTypes.APPLICATION_GEO_JSON)
+                                               .addHeader(HTTPHeaders.CONTENT_TYPE, MediaTypes.APPLICATION_GEO_JSON)
+                                               .build();
 
         try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful()) {
@@ -79,12 +82,9 @@ public class CatalogClientImpl implements CatalogClient {
 
     @Override
     public void insert(JsonNode content) throws IOException {
-        Request request = new Request.Builder()
-                                  .post(asRequestBody(content))
-                                  .url(config.getCatalog().getURL())
-                                  .addHeader(HTTPHeaders.CONTENT_TYPE, MediaTypes.APPLICATION_GEO_JSON.toString())
-                                  .build();
-
+        Request request = new Request.Builder().post(asRequestBody(content)).url(getURL())
+                                               .addHeader(HTTPHeaders.CONTENT_TYPE, MediaTypes.APPLICATION_GEO_JSON)
+                                               .build();
         try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful()) {
                 throw asException(response);
@@ -94,10 +94,8 @@ public class CatalogClientImpl implements CatalogClient {
 
     @Override
     public boolean exists(String id) throws IOException {
-        Request request = new Request.Builder().get()
-                                               .url(config.getCatalog().getURL(id))
-                                               .addHeader(HTTPHeaders.ACCEPT,
-                                                          MediaTypes.APPLICATION_GEO_JSON.toString())
+        Request request = new Request.Builder().get().url(getURL(id))
+                                               .addHeader(HTTPHeaders.ACCEPT, MediaTypes.APPLICATION_GEO_JSON)
                                                .build();
         try (Response response = client.newCall(request).execute()) {
             if (response.isSuccessful()) {
@@ -110,10 +108,26 @@ public class CatalogClientImpl implements CatalogClient {
         }
     }
 
+    private HttpUrl getURL(JsonNode content) {
+        return getURL(getId(content));
+    }
+
+    private HttpUrl getURL(String id) {
+        return config.getCatalog().getURL(id);
+    }
+
+    private HttpUrl getURL() {
+        return config.getCatalog().getURL();
+    }
+
+    private String getId(JsonNode node) {
+        return node.path(JsonConstants.PROPERTIES).path(JSONConstants.IDENTIFIER).textValue();
+    }
+
     private RequestBody asRequestBody(JsonNode content) throws IOException {
         String value = objectMapper.writeValueAsString(content);
         LOG.info("request-body: {}", value);
-        return RequestBody.create(value, MediaTypes.APPLICATION_GEO_JSON);
+        return RequestBody.create(value, MediaTypes.APPLICATION_GEO_JSON_TYPE);
     }
 
     private IOException asException(Response response) throws IOException {

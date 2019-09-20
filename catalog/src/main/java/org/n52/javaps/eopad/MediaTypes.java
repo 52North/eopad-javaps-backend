@@ -21,5 +21,6 @@ import okhttp3.MediaType;
 public interface MediaTypes {
     String APPLICATION_OPENAPI_JSON_VERSION_3_0 = "application/openapi+json;version=3.0";
     String APPLICATION_JSON = "application/json";
-    MediaType APPLICATION_GEO_JSON = MediaType.get("application/geo+json");
+    String APPLICATION_GEO_JSON = "application/geo+json";
+    MediaType APPLICATION_GEO_JSON_TYPE = MediaType.get(APPLICATION_GEO_JSON);
 }

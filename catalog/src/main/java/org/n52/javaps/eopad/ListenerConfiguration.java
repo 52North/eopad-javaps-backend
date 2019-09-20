@@ -27,7 +27,7 @@ import org.n52.javaps.eopad.http.LoggingInterceptor;
 import org.n52.javaps.transactional.TransactionalAlgorithmRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -65,7 +65,7 @@ public class ListenerConfiguration {
     }
 
     @Bean
-    @ConditionalOnExpression("${listener.deimos.enabled:true}")
+    @ConditionalOnProperty(value = "listeners.deimos.enabled", matchIfMissing = true)
     public CatalogListener deimosCatalogListener(CatalogEncoder encoder,
                                                  @Value("${listener.deimos.username:}") String username,
                                                  @Value("${listener.deimos.password:}") String password) {
@@ -74,7 +74,7 @@ public class ListenerConfiguration {
     }
 
     @Bean
-    @ConditionalOnExpression("${listener.gmu.enabled:true}")
+    @ConditionalOnProperty(value = "listeners.gmu.enabled", matchIfMissing = true)
     public CatalogListener gmuCatalogListener(CatalogEncoder encoder,
                                               @Value("${listener.gmu.username:}") String username,
                                               @Value("${listener.gmu.password:}") String password) {
