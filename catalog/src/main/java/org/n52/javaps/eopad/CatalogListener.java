@@ -31,7 +31,6 @@ import java.util.Objects;
 @Configurable
 public class CatalogListener implements TransactionalAlgorithmRepositoryListener, Constructable, Destroyable {
     private static final Logger LOG = LoggerFactory.getLogger(CatalogListener.class);
-
     private final CatalogEncoder catalogEncoder;
     private final CatalogClient client;
     private final CatalogConfiguration config;
@@ -74,7 +73,7 @@ public class CatalogListener implements TransactionalAlgorithmRepositoryListener
 
     private void updateOrInsertApplicationPackage(ApplicationPackage applicationPackage) {
         try {
-            client.updateOrInsert(catalogEncoder.createProcessInsertion(applicationPackage));
+            client.updateOrInsert(catalogEncoder.createProcessInsertion(applicationPackage, config));
         } catch (EncodingException | IOException e) {
             LOG.warn("Error inserting/updating application package", e);
         }
@@ -82,7 +81,7 @@ public class CatalogListener implements TransactionalAlgorithmRepositoryListener
 
     private void updateOrInsertServiceDescription() {
         try {
-            client.updateOrInsert(catalogEncoder.createServiceInsertion());
+            client.updateOrInsert(catalogEncoder.createServiceInsertion(config));
         } catch (EncodingException | IOException e) {
             LOG.warn("Error inserting/updating service description", e);
         }

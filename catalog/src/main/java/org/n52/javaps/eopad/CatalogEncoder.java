@@ -21,8 +21,8 @@ import org.n52.shetland.ogc.wps.ap.ApplicationPackage;
 import org.n52.svalbard.encode.exception.EncodingException;
 
 public interface CatalogEncoder {
-    ObjectNode createProcessInsertion(ApplicationPackage applicationPackage)
+    ObjectNode createProcessInsertion(ApplicationPackage applicationPackage, CatalogConfiguration config)
             throws EncodingException;
 
-    ObjectNode createServiceInsertion() throws EncodingException;
+    ObjectNode createServiceInsertion(CatalogConfiguration config) throws EncodingException;
 }

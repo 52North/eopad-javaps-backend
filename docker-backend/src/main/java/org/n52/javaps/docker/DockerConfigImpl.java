@@ -60,9 +60,13 @@ public class DockerConfigImpl implements DockerConfig {
         return Optional.ofNullable(timeout);
     }
 
-    @Value("${docker.timeout:PT30M}")
     public void setTimeout(Duration timeout) {
         this.timeout = timeout;
+    }
+
+    @Value("${docker.timeout:PT30M}")
+    public void setTimeout(String timeout) {
+        setTimeout(timeout == null ? null : Duration.parse(timeout));
     }
 
     @Override

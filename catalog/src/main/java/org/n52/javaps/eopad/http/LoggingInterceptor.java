@@ -14,28 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.n52.javaps.eopad;
+package org.n52.javaps.eopad.http;
 
-import okhttp3.OkHttpClient;
+import okhttp3.Interceptor;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
-@Configuration
-public class OkHttpConfiguration {
+import java.io.IOException;
+
+public class LoggingInterceptor implements Interceptor {
     private static final Logger LOG = LoggerFactory.getLogger("okhttp3");
 
-    @Bean
-    public OkHttpClient client() {
-        return new OkHttpClient.Builder().addInterceptor(chain -> {
-            Request request = chain.request();
-            Response response = chain.proceed(request);
-            LOG.info("{} {} {}", request.method(), request.url(), response.code());
-            return response;
-        }).build();
+    @Override
+    public Response intercept(Chain chain) throws IOException {
+        Request request = chain.request();
+        Response response = chain.proceed(request);
+        LOG.info("{} {} {}", request.method(), request.url(), response.code());
+        return response;
     }
-
 }

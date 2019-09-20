@@ -24,6 +24,7 @@ import org.n52.javaps.docker.process.DockerAlgorithm;
 import org.n52.javaps.transactional.AbstractTransactionalAlgorithmRepository;
 import org.n52.shetland.ogc.wps.ap.ApplicationPackage;
 import org.n52.shetland.ogc.wps.ap.DockerExecutionUnit;
+import org.n52.shetland.ogc.wps.ap.ExecutionUnit;
 import org.n52.shetland.ogc.wps.description.ProcessDescription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +32,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * @author <a href="mailto:m.rieke@52north.org">Matthes Rieke</a>
@@ -55,7 +57,8 @@ public class DockerAlgorithmRepository extends AbstractTransactionalAlgorithmRep
 
     @Override
     public boolean isSupported(ApplicationPackage applicationPackage) {
-        return applicationPackage.getExecutionUnit() instanceof DockerExecutionUnit;
+        List<ExecutionUnit> executionUnits = applicationPackage.getExecutionUnits();
+        return executionUnits.size() == 1 && executionUnits.iterator().next() instanceof DockerExecutionUnit;
     }
 
     @Override

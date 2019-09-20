@@ -1,15 +1,15 @@
-FROM maven:3-jdk-8-alpine AS BUILD
+#FROM maven:3-jdk-8-alpine AS BUILD
 
-RUN apk add --no-cache git
+#RUN apk add --no-cache git
 
-WORKDIR /usr/src/app
+#WORKDIR /usr/src/app
 
-COPY . /usr/src/app
+#COPY . /usr/src/app
 
-RUN mvn --batch-mode --errors --fail-fast \
-      --define maven.javadoc.skip=true \
-      --define maven.test.skip=true \
-      install
+#RUN mvn --batch-mode --errors --fail-fast \
+#      --define maven.javadoc.skip=true \
+#      --define maven.test.skip=true \
+#      -P no-download install
 
 FROM jetty:jre8-alpine
 
@@ -20,7 +20,8 @@ ENV JAVAPS_TMP ${JAVAPS_ROOT}/WEB-INF/tmp
 ENV JAVAPS_CONFIG ${JAVAPS_ROOT}/WEB-INF/config
 ENV JAVAPS_LIB ${JAVAPS_ROOT}/WEB-INF/lib
 
-COPY --from=BUILD /usr/src/app/webapp/target/webapp/ /var/lib/jetty/webapps/ROOT
+#COPY --from=BUILD /usr/src/app/webapp/target/webapp/ /var/lib/jetty/webapps/ROOT
+COPY webapp/target/webapp/ /var/lib/jetty/webapps/ROOT
 COPY etc/docker-log4j2.xml /var/lib/jetty/webapps/ROOT/WEB-INF/config/log4j2.xml
 COPY etc/docker-configuration.json /var/lib/jetty/webapps/ROOT/WEB-INF/config/configuration.json
 
@@ -58,6 +59,13 @@ LABEL org.opencontainers.image.revision="${GIT_COMMIT}"
 
 ARG BUILD_DATE
 LABEL org.opencontainers.image.created="${BUILD_DATE}"
+
+ENV LISTENER_GMU_ENABLED="true" \
+    LISTENER_GMU_USERNAME="" \
+    LISTENER_GMU_PASSWORD="" \
+    LISTENER_DEIMOS_ENABLED="true" \
+    LISTENER_DEIMOS_USERNAME="" \
+    LISTENER_DEIMOS_PASSWORD=""
 
 CMD [ "java", "-jar", "/usr/local/jetty/start.jar" ]
 ENTRYPOINT [ "/usr/local/bin/faroe-entrypoint.sh", "/docker-entrypoint.sh" ]

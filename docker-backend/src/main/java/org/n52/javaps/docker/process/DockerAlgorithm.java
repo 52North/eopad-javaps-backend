@@ -79,7 +79,13 @@ public class DockerAlgorithm extends AbstractAlgorithm {
         this.dockerClient = Objects.requireNonNull(dockerClient);
         this.applicationPackage = Objects.requireNonNull(applicationPackage);
         this.descriptionBuilder = Objects.requireNonNull(descriptionBuilder);
-        this.executionUnit = (DockerExecutionUnit) this.applicationPackage.getExecutionUnit();
+
+        if (applicationPackage.getExecutionUnits().size() != 1 ||
+            !(applicationPackage.getExecutionUnits().iterator().next() instanceof DockerExecutionUnit)) {
+            throw new IllegalArgumentException("exactly one docker execution unit is required");
+        }
+
+        this.executionUnit = (DockerExecutionUnit) applicationPackage.getExecutionUnits().iterator().next();
     }
 
     private Logger getJobLog() {

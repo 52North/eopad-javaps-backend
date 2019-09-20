@@ -27,6 +27,10 @@
              https://www.springframework.org/schema/context/spring-context.xsd">
     <context:annotation-config/>
     <context:component-scan base-package="org.n52.javaps.docker"/>
+
+    <bean class="org.n52.svalbard.decode.json.wps.DockerExecutionUnitDecoder"/>
+    <bean class="org.n52.svalbard.encode.json.wps.DockerExecutionUnitEncoder"/>
+
     <bean class="org.n52.javaps.docker.Environment">
         <constructor-arg>
             <map>

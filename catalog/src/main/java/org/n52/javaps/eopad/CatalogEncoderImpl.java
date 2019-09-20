@@ -31,28 +31,30 @@ import org.n52.svalbard.encode.Encoder;
 import org.n52.svalbard.encode.EncoderRepository;
 import org.n52.svalbard.encode.exception.EncodingException;
 import org.n52.svalbard.encode.json.JSONEncoderKey;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.time.OffsetDateTime;
 import java.util.Objects;
 
+@Component
 @Configurable
 public class CatalogEncoderImpl implements CatalogEncoder {
     private static final String DATA_HREF = "data:";
     private static final String PROCESSES_PATH = "processes/";
     private static final String CONFORMANCE_PATH = "conformance/";
     private static final String API_PATH = "api/";
-    private final EncoderRepository encoderRepository;
-    private final Engine engine;
-    private final CatalogConfiguration config;
+    private EncoderRepository encoderRepository;
+    private Engine engine;
 
-    public CatalogEncoderImpl(CatalogConfiguration config, Engine engine, EncoderRepository encoderRepository) {
+    @Autowired
+    public CatalogEncoderImpl(Engine engine, EncoderRepository encoderRepository) {
         this.encoderRepository = Objects.requireNonNull(encoderRepository);
         this.engine = Objects.requireNonNull(engine);
-        this.config = Objects.requireNonNull(config);
     }
 
     @Override
-    public ObjectNode createProcessInsertion(ApplicationPackage applicationPackage)
+    public ObjectNode createProcessInsertion(ApplicationPackage applicationPackage, CatalogConfiguration config)
             throws EncodingException {
         JsonNode content = getApplicationPackageEncoder().encode(applicationPackage);
 
@@ -84,16 +86,16 @@ public class CatalogEncoderImpl implements CatalogEncoder {
     }
 
     @Override
-    public ObjectNode createServiceInsertion() throws EncodingException {
+    public ObjectNode createServiceInsertion(CatalogConfiguration config) throws EncodingException {
         ObjectNode root = Json.nodeFactory().objectNode()
                               .put(JsonConstants.TYPE, JsonConstants.FEATURE)
-                              .put(JsonConstants.ID, config.getServiceURL().toString())
+                              .put(JsonConstants.ID, config.getServiceIdentifier())
                               .putNull(JsonConstants.GEOMETRY);
 
         ObjectNode properties = root.putObject(JsonConstants.PROPERTIES);
         properties.put(JsonConstants.IDENTIFIER, config.getServiceIdentifier());
         properties.put(JsonConstants.KIND, Kinds.SERVICE_TYPE);
-        properties.put(JsonConstants.TITLE, getServiceTitle());
+        properties.put(JsonConstants.TITLE, getServiceTitle(config));
         properties.put(JsonConstants.UPDATED, OffsetDateTime.now().toString());
         ObjectNode links = root.putObject(JsonConstants.LINKS);
         ArrayNode profiles = links.putArray(JsonConstants.PROFILES);
@@ -121,25 +123,25 @@ public class CatalogEncoderImpl implements CatalogEncoder {
         operations.addObject()
                   .put(JsonConstants.CODE, Operations.SERVICE)
                   .put(JsonConstants.METHOD, HTTPMethods.GET)
-                  .put(JsonConstants.HREF, getRootUrl(API_PATH))
+                  .put(JsonConstants.HREF, getRootUrl(config, API_PATH))
                   .put(JsonConstants.TYPE, MediaTypes.APPLICATION_OPENAPI_JSON_VERSION_3_0);
 
         operations.addObject()
                   .put(JsonConstants.CODE, Operations.CONFORMANCE)
                   .put(JsonConstants.METHOD, HTTPMethods.GET)
-                  .put(JsonConstants.HREF, getRootUrl(CONFORMANCE_PATH))
+                  .put(JsonConstants.HREF, getRootUrl(config, CONFORMANCE_PATH))
                   .put(JsonConstants.TYPE, MediaTypes.APPLICATION_JSON);
 
         operations.addObject()
                   .put(JsonConstants.CODE, Operations.PROCESSES)
                   .put(JsonConstants.METHOD, HTTPMethods.GET)
-                  .put(JsonConstants.HREF, getRootUrl(PROCESSES_PATH))
+                  .put(JsonConstants.HREF, getRootUrl(config, PROCESSES_PATH))
                   .put(JsonConstants.TYPE, MediaTypes.APPLICATION_JSON);
 
         operations.addObject()
                   .put(JsonConstants.CODE, Operations.DEPLOY_PROCESS)
                   .put(JsonConstants.METHOD, HTTPMethods.POST)
-                  .put(JsonConstants.HREF, getRootUrl(PROCESSES_PATH))
+                  .put(JsonConstants.HREF, getRootUrl(config, PROCESSES_PATH))
                   .put(JsonConstants.TYPE, MediaTypes.APPLICATION_JSON)
                   .putObject(JsonConstants.REQUEST).put(JsonConstants.TYPE, MediaTypes.APPLICATION_JSON);
 
@@ -155,7 +157,7 @@ public class CatalogEncoderImpl implements CatalogEncoder {
         return root;
     }
 
-    private String getRootUrl(String path) {
+    private String getRootUrl(CatalogConfiguration config, String path) {
         HttpUrl url = config.getServiceURL().resolve(path);
         if (url == null) {
             throw new IllegalArgumentException();
@@ -163,7 +165,7 @@ public class CatalogEncoderImpl implements CatalogEncoder {
         return url.toString();
     }
 
-    private String getServiceTitle() {
+    private String getServiceTitle(CatalogConfiguration config) {
         // TODO get this from the OwsServiceIdentificationFactory
         return String.format("Processing API at %s", config.getServiceURL().host());
     }

@@ -14,20 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.n52.javaps.transactional;
+package org.n52.javaps.docker.util;
 
-import org.n52.shetland.ogc.ows.OwsCode;
+import org.springframework.core.convert.converter.Converter;
 
-public class DuplicateProcessException extends TransactionalEngineException {
-    private static final long serialVersionUID = -5732712161388700460L;
-    private final OwsCode id;
+import java.time.Duration;
 
-    public DuplicateProcessException(OwsCode id) {
-        super(String.format("An algorithm with the name %s is already registered.", id));
-        this.id = id;
+@TypeConverter
+public class DurationToStringConverter implements Converter<Duration, String> {
+
+    @Override
+    public String convert(Duration source) {
+        return source.toString();
     }
 
-    public OwsCode getId() {
-        return id;
-    }
 }

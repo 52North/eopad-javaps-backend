@@ -31,6 +31,12 @@
         <Logger name="org.springframework" level="info" additivity="false">
             <AppenderRef ref="console"/>
         </Logger>
+        <Logger name="org.n52.iceland.config.spring.ProviderAwareListableBeanFactory" level="info" additivity="false">
+            <AppenderRef ref="console"/>
+        </Logger>
+        <Logger name="okhttp3" level="info" additivity="false">
+            <AppenderRef ref="console"/>
+        </Logger>
         <Root level="warn">
             <AppenderRef ref="console"/>
         </Root>

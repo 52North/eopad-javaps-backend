@@ -16,11 +16,12 @@
  */
 package org.n52.javaps.eopad;
 
+import okhttp3.Credentials;
 import okhttp3.HttpUrl;
 import org.n52.shetland.ogc.wps.ap.ApplicationPackage;
 
 public class CatalogImpl implements Catalog {
-    private static final String SERVICE = "service";
+    private static final String SERVICES = "services";
     private final HttpUrl url;
 
     public CatalogImpl(String url) {
@@ -29,12 +30,12 @@ public class CatalogImpl implements Catalog {
 
     @Override
     public HttpUrl getURL() {
-        return url.newBuilder().addPathSegment(SERVICE).build();
+        return url.newBuilder().addPathSegment(SERVICES).build();
     }
 
     @Override
     public HttpUrl getURL(String id) {
-        return url.newBuilder().addPathSegment(SERVICE).addPathSegment(id).build();
+        return url.newBuilder().addPathSegment(SERVICES).addPathSegment(id).build();
     }
 
     @Override

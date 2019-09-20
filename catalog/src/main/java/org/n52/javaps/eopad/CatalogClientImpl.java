@@ -25,11 +25,14 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 import org.n52.janmayen.http.HTTPHeaders;
 import org.n52.svalbard.coding.json.JSONConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Objects;
 
 public class CatalogClientImpl implements CatalogClient {
+    private static final Logger LOG = LoggerFactory.getLogger(CatalogClientImpl.class);
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final OkHttpClient client;
     private final CatalogConfiguration config;
@@ -108,7 +111,9 @@ public class CatalogClientImpl implements CatalogClient {
     }
 
     private RequestBody asRequestBody(JsonNode content) throws IOException {
-        return RequestBody.create(objectMapper.writeValueAsString(content), MediaTypes.APPLICATION_GEO_JSON);
+        String value = objectMapper.writeValueAsString(content);
+        LOG.info("request-body: {}", value);
+        return RequestBody.create(value, MediaTypes.APPLICATION_GEO_JSON);
     }
 
     private IOException asException(Response response) throws IOException {

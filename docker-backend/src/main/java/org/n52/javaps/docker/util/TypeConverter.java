@@ -14,20 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.n52.javaps.transactional;
+package org.n52.javaps.docker.util;
 
-import org.n52.shetland.ogc.ows.OwsCode;
+import org.springframework.stereotype.Component;
 
-public class DuplicateProcessException extends TransactionalEngineException {
-    private static final long serialVersionUID = -5732712161388700460L;
-    private final OwsCode id;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-    public DuplicateProcessException(OwsCode id) {
-        super(String.format("An algorithm with the name %s is already registered.", id));
-        this.id = id;
-    }
-
-    public OwsCode getId() {
-        return id;
-    }
-}
+@Target({ElementType.TYPE, ElementType.FIELD, ElementType.PARAMETER, ElementType.METHOD})
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Component
+public @interface TypeConverter {}

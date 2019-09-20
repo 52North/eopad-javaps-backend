@@ -1,3 +1,5 @@
 Dockerfile
 **/target/
+!webapp/target/webapp/
 webapp/overlays/
+.dockerignore

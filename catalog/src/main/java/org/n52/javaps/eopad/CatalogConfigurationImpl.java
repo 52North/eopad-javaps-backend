@@ -17,16 +17,11 @@
 package org.n52.javaps.eopad;
 
 import okhttp3.HttpUrl;
-import org.n52.faroe.Validation;
-import org.n52.faroe.annotation.Configurable;
-import org.n52.faroe.annotation.Setting;
-import org.n52.iceland.service.ServiceSettings;
 import org.n52.janmayen.function.Predicates;
 import org.n52.janmayen.stream.Streams;
 import org.n52.javaps.transactional.TransactionalAlgorithmRepository;
 import org.n52.shetland.ogc.wps.ap.ApplicationPackage;
 
-import java.net.URI;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -38,16 +33,16 @@ import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.joining;
 
-@Configurable
 public class CatalogConfigurationImpl implements CatalogConfiguration {
-    private HttpUrl serviceURL;
-
+    private final HttpUrl serviceURL;
     private final Collection<TransactionalAlgorithmRepository> repositories;
     private final Catalog catalog;
 
-    public CatalogConfigurationImpl(Catalog catalog, Collection<TransactionalAlgorithmRepository> repositories) {
+    public CatalogConfigurationImpl(Catalog catalog, Collection<TransactionalAlgorithmRepository> repositories,
+                                    HttpUrl serviceURL) {
         this.catalog = Objects.requireNonNull(catalog);
         this.repositories = Objects.requireNonNull(repositories);
+        this.serviceURL = Objects.requireNonNull(serviceURL);
     }
 
     @Override
@@ -67,21 +62,6 @@ public class CatalogConfigurationImpl implements CatalogConfiguration {
             throw new IllegalArgumentException();
         }
         return resolve.resolve(id);
-    }
-
-    @Setting(ServiceSettings.SERVICE_URL)
-    public void setServiceURL(URI serviceURL) {
-        Validation.notNull("serviceURL", serviceURL);
-        HttpUrl httpUrl = HttpUrl.get(serviceURL);
-        if (httpUrl == null) {
-            throw new IllegalArgumentException();
-        }
-        httpUrl = httpUrl.resolve("./rest");
-        if (httpUrl == null) {
-            throw new IllegalArgumentException();
-        }
-        HttpUrl.Builder builder = httpUrl.newBuilder();
-        this.serviceURL = builder.query(null).build();
     }
 
     @Override

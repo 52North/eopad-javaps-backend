@@ -16,100 +16,87 @@
  */
 package org.n52.javaps.eopad;
 
+import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
-import org.n52.javaps.engine.Engine;
+import org.n52.faroe.Validation;
+import org.n52.faroe.annotation.Configurable;
+import org.n52.faroe.annotation.Setting;
+import org.n52.iceland.service.ServiceSettings;
+import org.n52.javaps.eopad.http.BasicAuthenticator;
+import org.n52.javaps.eopad.http.LoggingInterceptor;
 import org.n52.javaps.transactional.TransactionalAlgorithmRepository;
-import org.n52.svalbard.encode.EncoderRepository;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-import java.util.Collection;
+import java.net.URI;
+import java.util.Collections;
+import java.util.Optional;
+import java.util.Set;
 
 @Configuration
+@Configurable
 public class ListenerConfiguration {
 
-    @Bean
-    @Deimos
-    public CatalogClient deimosCatalogClient(@Deimos CatalogConfiguration configuration,
-                                             OkHttpClient client) {
-        return new CatalogClientImpl(configuration, client);
+    private Set<TransactionalAlgorithmRepository> repositories = Collections.emptySet();
+
+    private HttpUrl serviceURL;
+
+    @Setting(ServiceSettings.SERVICE_URL)
+    public void setServiceURL(URI serviceURL) {
+        Validation.notNull("serviceURL", serviceURL);
+        HttpUrl httpUrl = HttpUrl.get(serviceURL);
+        if (httpUrl == null) {
+            throw new IllegalArgumentException();
+        }
+        httpUrl = httpUrl.resolve("./rest");
+        if (httpUrl == null) {
+            throw new IllegalArgumentException();
+        }
+        HttpUrl.Builder builder = httpUrl.newBuilder();
+        this.serviceURL = builder.query(null).build();
+    }
+
+    @Autowired(required = false)
+    public void setRepositories(Set<TransactionalAlgorithmRepository> repositories) {
+        this.repositories = Optional.ofNullable(repositories).orElseGet(Collections::emptySet);
     }
 
     @Bean
-    @Deimos
-    public CatalogEncoder deimosCatalogEncoder(@Deimos CatalogConfiguration configuration,
-                                               Engine engine, EncoderRepository encoderRepository) {
-        return new CatalogEncoderImpl(configuration, engine, encoderRepository);
+    @ConditionalOnExpression("${listener.deimos.enabled:true}")
+    public CatalogListener deimosCatalogListener(CatalogEncoder encoder,
+                                                 @Value("${listener.deimos.username:}") String username,
+                                                 @Value("${listener.deimos.password:}") String password) {
+        String url = "http://servicecatalogue-ogctestbed15.deimos.pt/smi/";
+        return createListener(encoder, username, password, url);
     }
 
     @Bean
-    public CatalogListener deimosCatalogListener(@Deimos CatalogConfiguration configuration,
-                                                 @Deimos CatalogEncoder encoder,
-                                                 @Deimos CatalogClient client) {
-        return new CatalogListener(configuration, encoder, client);
+    @ConditionalOnExpression("${listener.gmu.enabled:true}")
+    public CatalogListener gmuCatalogListener(CatalogEncoder encoder,
+                                              @Value("${listener.gmu.username:}") String username,
+                                              @Value("${listener.gmu.password:}") String password) {
+        String url = "https://cloud.csiss.gmu.edu/ows15/geonet/rest3a/ogc/cat3a/";
+        return createListener(encoder, username, password, url);
     }
 
-    @Bean
-    @Deimos
-    public CatalogConfiguration deimosCatalogConfiguration(@Deimos Catalog catalog,
-                                                           Collection<TransactionalAlgorithmRepository> repositories) {
-        return new CatalogConfigurationImpl(catalog, repositories);
+    private CatalogListener createListener(CatalogEncoder catalogEncoder,
+                                           String username,
+                                           String password, String url) {
+        Catalog catalog = new CatalogImpl(url);
+        CatalogConfiguration catalogConfiguration = createCatalogConfiguration(catalog);
+        OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder().addInterceptor(new LoggingInterceptor());
+        if (username != null && !username.isEmpty() && password != null && !password.isEmpty()) {
+            clientBuilder.authenticator(new BasicAuthenticator(username, password));
+        }
+        CatalogClient catalogClient = new CatalogClientImpl(catalogConfiguration, clientBuilder.build());
+        return new CatalogListener(catalogConfiguration, catalogEncoder, catalogClient);
     }
 
-    @Bean
-    @Deimos
-    public Catalog deimosCatalog(@Value("http://servicecatalogue-ogctestbed15.deimos.pt/smi/") String url) {
-        return new CatalogImpl(url);
+    private CatalogConfigurationImpl createCatalogConfiguration(Catalog catalog) {
+        return new CatalogConfigurationImpl(catalog, repositories, serviceURL);
     }
-
-    @Bean
-    @GMU
-    public CatalogClient gmuCatalogClient(@GMU CatalogConfiguration configuration,
-                                          OkHttpClient client) {
-        return new CatalogClientImpl(configuration, client);
-    }
-
-    @Bean
-    @GMU
-    public CatalogEncoder gmuCatalogEncoder(@GMU CatalogConfiguration configuration,
-                                            Engine engine, EncoderRepository encoderRepository) {
-        return new CatalogEncoderImpl(configuration, engine, encoderRepository);
-    }
-
-    @Bean
-    public CatalogListener gmuCatalogListener(@GMU CatalogConfiguration configuration,
-                                              @GMU CatalogEncoder encoder,
-                                              @GMU CatalogClient client) {
-        return new CatalogListener(configuration, encoder, client);
-    }
-
-    @Bean
-    @GMU
-    public CatalogConfiguration gmuCatalogConfiguration(@GMU Catalog catalog,
-                                                        Collection<TransactionalAlgorithmRepository> repositories) {
-        return new CatalogConfigurationImpl(catalog, repositories);
-    }
-
-    @Bean
-    @GMU
-    public Catalog gmuCatalog(@Value("https://cloud.csiss.gmu.edu/ows15/geonet/rest3a/ogc/cat3a/") String url) {
-        return new CatalogImpl(url);
-    }
-
-    @Target({ElementType.FIELD, ElementType.METHOD, ElementType.TYPE, ElementType.PARAMETER})
-    @Retention(RetentionPolicy.RUNTIME)
-    @Qualifier
-    @interface Deimos {}
-
-    @Target({ElementType.FIELD, ElementType.METHOD, ElementType.TYPE, ElementType.PARAMETER})
-    @Retention(RetentionPolicy.RUNTIME)
-    @Qualifier
-    @interface GMU {}
 
 }
