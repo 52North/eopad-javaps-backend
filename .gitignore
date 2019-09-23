@@ -9,4 +9,5 @@ nb-configuration*.xml
 .classpath
 /nbproject/
 .factorypath
-
+.idea
+*.iml

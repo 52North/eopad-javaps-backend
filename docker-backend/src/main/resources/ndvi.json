@@ -1,0 +1,151 @@
+{
+  "processDescription": {
+    "process": {
+      "id": "org.n52.project.tb15.eopad.NdviCalculation",
+      "title": "Calculation of NDVI using the SNAP toolbox for Sentinel-2",
+      "abstract": "Calculation of NDVI using the SNAP toolbox for Sentinel-2",
+      "keywords": [
+        "Vegetation",
+        "NDVI"
+      ],
+      "inputs": [
+        {
+          "id": "source",
+          "title": "Source Input Image (sentinel-2 product in SAFE format)",
+          "abstract": "Source Input Image (sentinel-2 product in SAFE format).",
+          "minOccurs": 1,
+          "maxOccurs": 1,
+          "input": {
+            "formats": [
+              {
+                "mimeType": "text/plain",
+                "default": false
+              }
+            ]
+          }
+        },
+        {
+          "id": "red_source_band",
+          "title": "the band to be used for the red band",
+          "minOccurs": 0,
+          "maxOccurs": 1,
+          "input": {
+            "literalDataDomains": [
+              {
+                "dataType": {
+                  "name": "integer"
+                },
+                "valueDefinition": [
+                  {
+                    "minimumValue": "1",
+                    "maximumValue": "13",
+                    "rangeClosure": "closed"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "id": "nir_source_band",
+          "title": "the band to be used for the near-infrared band",
+          "minOccurs": 0,
+          "maxOccurs": 1,
+          "input": {
+            "literalDataDomains": [
+              {
+                "dataType": {
+                  "name": "integer"
+                },
+                "valueDefinition": {
+                  "allowedRange": {
+                    "minimumValue": "1",
+                    "maximumValue": "13",
+                    "rangeClosure": "closed"
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "id": "red_factor",
+          "title": "the factor of the NRI",
+          "minOccurs": 0,
+          "maxOccurs": 1,
+          "input": {
+            "literalDataDomains": [
+              {
+                "defaultValue": "1.0",
+                "dataType": {
+                  "name": "number"
+                },
+                "valueDefinition": [
+                  {
+                    "minimumValue": "0.0",
+                    "rangeClosure": "closed"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "id": "nir_factor",
+          "title": "the factor of the NIR",
+          "minOccurs": 0,
+          "maxOccurs": 1,
+          "input": {
+            "literalDataDomains": [
+              {
+                "defaultValue": "1.0",
+                "dataType": {
+                  "name": "number"
+                },
+                "valueDefinition": [
+                  {
+                    "minimumValue": "0.0",
+                    "rangeClosure": "closed"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "id": "raster",
+          "title": "The raster of the resulting NDVI calculation",
+          "input": {
+            "formats": [
+              {
+                "mimeType": "image/geotiff",
+                "default": true
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "processVersion": "1.0.0",
+    "jobControlOptions": [
+      "async-execute"
+    ],
+    "outputTransmission": [
+      "reference"
+    ]
+  },
+  "immediateDeployment": true,
+  "executionUnit": [
+    {
+      "type": "docker",
+      "image": "docker.52north.org/eopad/snap-sentinel-2-ndvi:latest",
+      "environment": {
+        "SCIHUB_USERNAME": "",
+        "SCIHUB_PASSWORD": ""
+      }
+    }
+  ],
+  "deploymentProfileName": "http://www.opengis.net/profiles/eoc/dockerizedApplication"
+}

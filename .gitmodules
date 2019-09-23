@@ -1,0 +1,3 @@
+[submodule "javaps-rest"]
+	path = javaps-rest
+	url = https://github.com/autermann/javaps-rest.git
