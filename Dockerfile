@@ -1,15 +1,15 @@
-#FROM maven:3-jdk-8-alpine AS BUILD
+FROM maven:3-jdk-8-alpine AS BUILD
 
-#RUN apk add --no-cache git
+RUN apk add --no-cache git
 
-#WORKDIR /usr/src/app
+WORKDIR /usr/src/app
 
-#COPY . /usr/src/app
+COPY . /usr/src/app
 
-#RUN mvn --batch-mode --errors --fail-fast \
-#      --define maven.javadoc.skip=true \
-#      --define maven.test.skip=true \
-#      -P no-download install
+RUN mvn --batch-mode --errors --fail-fast \
+      --define maven.javadoc.skip=true \
+      --define maven.test.skip=true \
+      -P no-download install
 
 FROM jetty:jre8-alpine
 
@@ -20,8 +20,8 @@ ENV JAVAPS_TMP ${JAVAPS_ROOT}/WEB-INF/tmp
 ENV JAVAPS_CONFIG ${JAVAPS_ROOT}/WEB-INF/config
 ENV JAVAPS_LIB ${JAVAPS_ROOT}/WEB-INF/lib
 
-#COPY --from=BUILD /usr/src/app/webapp/target/webapp/ /var/lib/jetty/webapps/ROOT
-COPY webapp/target/webapp/ /var/lib/jetty/webapps/ROOT
+COPY --from=BUILD /usr/src/app/webapp/target/webapp/ /var/lib/jetty/webapps/ROOT
+#COPY webapp/target/webapp/ /var/lib/jetty/webapps/ROOT
 COPY etc/docker-log4j2.xml /var/lib/jetty/webapps/ROOT/WEB-INF/config/log4j2.xml
 COPY etc/docker-configuration.json /var/lib/jetty/webapps/ROOT/WEB-INF/config/configuration.json
 
