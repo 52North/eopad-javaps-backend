@@ -20,12 +20,12 @@ package org.n52.javaps.docker.process;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.InspectContainerResponse;
+import com.github.dockerjava.api.command.PullImageCmd;
+import com.github.dockerjava.api.exception.DockerClientException;
 import com.github.dockerjava.api.exception.DockerException;
 import com.github.dockerjava.api.model.Bind;
-import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Volume;
-import com.github.dockerjava.core.command.LogContainerResultCallback;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.n52.janmayen.stream.Streams;
@@ -105,10 +105,13 @@ public class DockerAlgorithm extends AbstractAlgorithm {
         try {
             // create a volume to hold the inputs and outputs
             jobConfig.setVolumeId(createVolume());
-
             // create a container with the volume mounted, as we can't directly copy to a volume
             Volume dataVolume = new Volume(jobConfig.getDataPath());
             Bind dataVolumeBind = new Bind(jobConfig.getVolumeId(), dataVolume);
+
+            pullImageIfNotPresent(HELPER_IMAGE_NAME);
+            pullImageIfNotPresent(executionUnit.getImage());
+
             // the container creates the necessary folders
             String[] cmd = createDirectories(jobConfig.getInputPath(), jobConfig.getOutputPath());
             CreateContainerCmd createHelperContainerCmd = createContainerCmd(HELPER_IMAGE_NAME)
@@ -164,6 +167,29 @@ public class DockerAlgorithm extends AbstractAlgorithm {
         } finally {
             cleanUp();
         }
+    }
+
+    private void pullImageIfNotPresent(String image) throws ExecutionException {
+        Logger log = getJobLog();
+        log.info("Pulling image {}.", image);
+        pullImage(image);
+        log.info("Successfully pulled image {}.", image);
+    }
+
+    private void pullImage(String image) throws ExecutionException {
+        PullImageCmd cmd = pullImageCmd(DockerImage.fromString(image));
+        try {
+            cmd.exec(new PullCallback(getJobLog())).awaitCompletion();
+        } catch (InterruptedException | DockerClientException e) {
+            throw new ExecutionException("could not pull image " + image, e);
+        }
+    }
+
+    private PullImageCmd pullImageCmd(DockerImage image) {
+        PullImageCmd cmd = jobConfig.getClient().pullImageCmd(image.getRepository())
+                                    .withTag(image.getTag().orElse(DockerImage.LATEST));
+        image.getRegistry().ifPresent(cmd::withRegistry);
+        return cmd;
     }
 
     private void cleanUp() {
@@ -267,7 +293,7 @@ public class DockerAlgorithm extends AbstractAlgorithm {
     }
 
     private void waitForCompletion(String containerId, Duration timeout) throws InterruptedException {
-        LogContainerResultCallback callback = createCallback(containerId);
+        LoggingCallback callback = createCallback(containerId);
         if (timeout == null) {
             callback.awaitCompletion();
         } else {
@@ -275,10 +301,10 @@ public class DockerAlgorithm extends AbstractAlgorithm {
         }
     }
 
-    private LogContainerResultCallback createCallback(String containerId) {
+    private LoggingCallback createCallback(String containerId) {
         return jobConfig.getClient().logContainerCmd(containerId)
                         .withStdErr(true).withStdOut(true).withFollowStream(true)
-                        .withTailAll().exec(new LoggingCallback(containerId));
+                        .withTailAll().exec(new LoggingCallback(getJobLog(), containerId));
     }
 
     private List<OutputDefinition> getOutputDefinitions() {
@@ -288,17 +314,5 @@ public class DockerAlgorithm extends AbstractAlgorithm {
                                .collect(toList());
     }
 
-    private class LoggingCallback extends LogContainerResultCallback {
-        private final Logger log;
-
-        LoggingCallback(String containerId) {
-            this.log = LoggerFactory.getLogger(String.format("%s.%s", jobConfig.getLog().getName(), containerId));
-        }
-
-        @Override
-        public void onNext(Frame item) {
-            log.info("{}", item.toString());
-        }
-    }
 }
 

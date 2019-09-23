@@ -436,6 +436,11 @@
                 <artifactId>spotbugs-annotations</artifactId>
                 <version>3.1.12</version>
             </dependency>
+            <dependency>
+                <groupId>com.google.code.findbugs</groupId>
+                <artifactId>jsr305</artifactId>
+                <version>3.0.2</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
     <build>
