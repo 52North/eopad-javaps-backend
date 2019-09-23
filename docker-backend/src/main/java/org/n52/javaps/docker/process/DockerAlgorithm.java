@@ -28,6 +28,7 @@ import com.github.dockerjava.api.model.Volume;
 import com.github.dockerjava.core.command.LogContainerResultCallback;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.n52.janmayen.stream.Streams;
 import org.n52.javaps.algorithm.AbstractAlgorithm;
 import org.n52.javaps.algorithm.ExecutionException;
 import org.n52.javaps.description.TypedProcessDescription;
@@ -44,15 +45,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
-import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 
 /**
@@ -62,8 +62,7 @@ public class DockerAlgorithm extends AbstractAlgorithm {
 
     private static final Logger LOG = LoggerFactory.getLogger(DockerAlgorithm.class);
     private static final Duration DEFAULT_TIMEOUT = Duration.parse("PT30M");
-
-    private static final String HELPER_CONTAINER_IMAGE = "busybox:latest";
+    private static final String HELPER_IMAGE_NAME = "busybox";
     private final ApplicationPackage applicationPackage;
     private final DockerExecutionUnit executionUnit;
     private final DockerConfig dockerConfig;
@@ -111,8 +110,8 @@ public class DockerAlgorithm extends AbstractAlgorithm {
             Volume dataVolume = new Volume(jobConfig.getDataPath());
             Bind dataVolumeBind = new Bind(jobConfig.getVolumeId(), dataVolume);
             // the container creates the necessary folders
-            String cmd = createDirectories(jobConfig.getInputPath(), jobConfig.getOutputPath());
-            CreateContainerCmd createHelperContainerCmd = createContainerCmd(HELPER_CONTAINER_IMAGE)
+            String[] cmd = createDirectories(jobConfig.getInputPath(), jobConfig.getOutputPath());
+            CreateContainerCmd createHelperContainerCmd = createContainerCmd(HELPER_IMAGE_NAME)
                                                                   .withVolumes(dataVolume)
                                                                   .withHostConfig(HostConfig.newHostConfig()
                                                                                             .withBinds(dataVolumeBind))
@@ -194,11 +193,8 @@ public class DockerAlgorithm extends AbstractAlgorithm {
         return inspectContainer(containerId);
     }
 
-    private String createDirectories(Object... directories) {
-
-        String parameters = Arrays.stream(directories).map(Object::toString).map(x -> String.format("\"%s\"", x))
-                                  .collect(joining(" "));
-        return String.format("mkdir -p %s", parameters);
+    private String[] createDirectories(String... directories) {
+        return Stream.concat(Stream.of("mkdir", "-p"), Streams.stream(directories)).toArray(String[]::new);
     }
 
     private void removeVolume(String volumeId) {
@@ -219,7 +215,6 @@ public class DockerAlgorithm extends AbstractAlgorithm {
                 getJobLog().error("unable to remove container " + containerId, ex);
             }
         }
-
     }
 
     private InspectContainerResponse inspectContainer(String containerId) {
