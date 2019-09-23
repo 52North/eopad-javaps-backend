@@ -142,7 +142,7 @@ public class DockerAlgorithm extends AbstractAlgorithm {
 
             try {
                 CreateContainerCmd createContainerCmd = createContainerCmd(executionUnit.getImage())
-                                                                .withEnv(jobConfig.getGlobalEnvironment().encode())
+                                                                .withEnv(jobConfig.getJobEnvironment().encode())
                                                                 .withVolumes(dataVolume)
                                                                 .withHostConfig(HostConfig.newHostConfig()
                                                                                           .withBinds(dataVolumeBind));
