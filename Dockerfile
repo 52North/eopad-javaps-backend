@@ -25,6 +25,7 @@ COPY webapp/target/webapp/ /var/lib/jetty/webapps/ROOT
 COPY etc/docker-log4j2.xml /var/lib/jetty/webapps/ROOT/WEB-INF/config/log4j2.xml
 COPY etc/docker-configuration.json /var/lib/jetty/webapps/ROOT/WEB-INF/config/configuration.json
 
+# we need root access for the docker daemon
 USER root
 RUN set -ex \
  && apk add --no-cache jq \
@@ -33,7 +34,6 @@ RUN set -ex \
  && ln -sf ${JAVAPS_CONFIG}/log4j2.xml ${JAVAPS_ROOT}/WEB-INF/classes/log4j2.xml \
  && mkdir -p ${JAVAPS_TMP}\
  && chown -R jetty:jetty ${JAVAPS_ROOT}
-USER jetty
 
 VOLUME /var/lib/jetty/webapps/ROOT/WEB-INF/tmp
 VOLUME /var/lib/jetty/webapps/ROOT/WEB-INF/config
