@@ -16,7 +16,7 @@
  */
 package org.n52.javaps.docker;
 
-public interface Labels {
+public interface Label {
     String JOB_ID = "org.n52.javaps.job.id";
     String JOB_TIME = "org.n52.javaps.job.time";
     String PROCESS_ID = "org.n52.javaps.process.id";

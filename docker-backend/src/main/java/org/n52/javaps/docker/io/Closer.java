@@ -43,7 +43,11 @@ public class Closer implements Destroyable {
     @Override
     public void destroy() {
         if (count.decrementAndGet() == 0) {
-            DockerUtils.cleanup(config);
+            cleanup();
         }
+    }
+
+    public void cleanup() {
+        DockerUtils.cleanup(config);
     }
 }

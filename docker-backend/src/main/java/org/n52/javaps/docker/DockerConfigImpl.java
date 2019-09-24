@@ -31,7 +31,8 @@ public class DockerConfigImpl implements DockerConfig {
     private String dockerHost;
     private String user;
     private String group;
-    private Duration timeout;
+    private Duration processTimeout;
+    private Duration stopTimeout;
     private Environment environment;
     private String javaPsVersion;
 
@@ -56,17 +57,31 @@ public class DockerConfigImpl implements DockerConfig {
     }
 
     @Override
-    public Optional<Duration> getTimeout() {
-        return Optional.ofNullable(timeout);
+    public Optional<Duration> getProcessTimeout() {
+        return Optional.ofNullable(processTimeout);
     }
 
-    public void setTimeout(Duration timeout) {
-        this.timeout = timeout;
+    public void setProcessTimeout(Duration processTimeout) {
+        this.processTimeout = processTimeout;
     }
 
-    @Value("${docker.timeout:PT30M}")
-    public void setTimeout(String timeout) {
-        setTimeout(timeout == null ? null : Duration.parse(timeout));
+    @Value("${docker.timeout.process:PT1H}")
+    public void setProcessTimeout(String timeout) {
+        setProcessTimeout(timeout == null ? null : Duration.parse(timeout));
+    }
+
+    @Override
+    public Optional<Duration> getStopTimeout() {
+        return Optional.ofNullable(stopTimeout);
+    }
+
+    public void setStopTimeout(Duration stopTimeout) {
+        this.stopTimeout = stopTimeout;
+    }
+
+    @Value("${docker.timeout.stop:PT5M}")
+    public void setStopTimeout(String timeout) {
+        setStopTimeout(timeout == null ? null : Duration.parse(timeout));
     }
 
     @Override

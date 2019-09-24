@@ -42,8 +42,13 @@ public class DelegatingDockerConfig implements DockerConfig {
     }
 
     @Override
-    public Optional<Duration> getTimeout() {
-        return delegate.getTimeout();
+    public Optional<Duration> getProcessTimeout() {
+        return delegate.getProcessTimeout();
+    }
+
+    @Override
+    public Optional<Duration> getStopTimeout() {
+        return delegate.getStopTimeout();
     }
 
     @Override

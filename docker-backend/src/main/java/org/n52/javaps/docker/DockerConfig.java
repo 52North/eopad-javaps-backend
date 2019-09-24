@@ -25,7 +25,9 @@ public interface DockerConfig {
 
     Optional<String> getUser();
 
-    Optional<Duration> getTimeout();
+    Optional<Duration> getProcessTimeout();
+
+    Optional<Duration> getStopTimeout();
 
     String getInputPath();
 

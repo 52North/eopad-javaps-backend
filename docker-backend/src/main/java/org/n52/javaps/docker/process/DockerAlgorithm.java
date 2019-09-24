@@ -22,10 +22,10 @@ import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.command.PullImageCmd;
 import com.github.dockerjava.api.exception.DockerClientException;
-import com.github.dockerjava.api.exception.DockerException;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Volume;
+import com.google.common.base.Throwables;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.n52.janmayen.stream.Streams;
@@ -34,7 +34,7 @@ import org.n52.javaps.algorithm.ExecutionException;
 import org.n52.javaps.description.TypedProcessDescription;
 import org.n52.javaps.docker.DockerConfig;
 import org.n52.javaps.docker.Environment;
-import org.n52.javaps.docker.Labels;
+import org.n52.javaps.docker.Label;
 import org.n52.javaps.docker.TypedDescriptionBuilder;
 import org.n52.javaps.docker.io.Closer;
 import org.n52.javaps.docker.util.DockerUtils;
@@ -47,6 +47,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,7 +64,6 @@ import static java.util.stream.Collectors.toList;
 public class DockerAlgorithm extends AbstractAlgorithm {
 
     private static final Logger LOG = LoggerFactory.getLogger(DockerAlgorithm.class);
-    private static final Duration DEFAULT_TIMEOUT = Duration.parse("PT30M");
     private static final String HELPER_IMAGE_NAME = "busybox";
     private final ApplicationPackage applicationPackage;
     private final DockerExecutionUnit executionUnit;
@@ -72,21 +72,21 @@ public class DockerAlgorithm extends AbstractAlgorithm {
     private final DockerClient dockerClient;
     private DockerJobConfig jobConfig;
 
-    public DockerAlgorithm(DockerConfig dockerConfig,
-                           DockerClient dockerClient,
-                           TypedDescriptionBuilder descriptionBuilder,
-                           ApplicationPackage applicationPackage) {
+    public DockerAlgorithm(DockerConfig dockerConfig, DockerClient dockerClient,
+                           TypedDescriptionBuilder descriptionBuilder, ApplicationPackage applicationPackage) {
         this.dockerConfig = Objects.requireNonNull(dockerConfig);
         this.dockerClient = Objects.requireNonNull(dockerClient);
         this.applicationPackage = Objects.requireNonNull(applicationPackage);
         this.descriptionBuilder = Objects.requireNonNull(descriptionBuilder);
+        this.executionUnit = getExecutionUnit(applicationPackage);
+    }
 
+    private static DockerExecutionUnit getExecutionUnit(ApplicationPackage applicationPackage) {
         if (applicationPackage.getExecutionUnits().size() != 1 ||
             !(applicationPackage.getExecutionUnits().iterator().next() instanceof DockerExecutionUnit)) {
             throw new IllegalArgumentException("exactly one docker execution unit is required");
         }
-
-        this.executionUnit = (DockerExecutionUnit) applicationPackage.getExecutionUnits().iterator().next();
+        return (DockerExecutionUnit) applicationPackage.getExecutionUnits().iterator().next();
     }
 
     @Override
@@ -99,7 +99,6 @@ public class DockerAlgorithm extends AbstractAlgorithm {
         Environment environment = new Environment(executionUnit.getEnvironment());
         environment.putAll(dockerConfig.getGlobalEnvironment());
         this.jobConfig = new DockerJobConfigImpl(dockerConfig, dockerClient, getDescription(), context, environment);
-
         try {
             // create a volume to hold the inputs and outputs
             jobConfig.setVolumeId(createVolume());
@@ -132,31 +131,30 @@ public class DockerAlgorithm extends AbstractAlgorithm {
             outputInfos = outputDefinitionProcessor.process(getOutputDefinitions());
 
             // wait for the container to stop
-            try {
-                waitForCompletion(jobConfig.getHelperContainerId());
-            } catch (InterruptedException ex) {
-                jobConfig.log().warn("helper container did not stop", ex);
+            if (!waitForCompletion(jobConfig.getHelperContainerId(), Duration.of(5, ChronoUnit.MINUTES))) {
+                stopContainer(jobConfig.getHelperContainerId());
+                throw new ExecutionException("helper container did not stop");
             }
 
-            try {
-                CreateContainerCmd createContainerCmd = createContainerCmd(executionUnit.getImage())
-                                                                .withEnv(jobConfig.getJobEnvironment().encode())
-                                                                .withVolumes(dataVolume)
-                                                                .withHostConfig(HostConfig.newHostConfig()
-                                                                                          .withBinds(dataVolumeBind));
+            CreateContainerCmd createContainerCmd = createContainerCmd(executionUnit.getImage())
+                                                            .withEnv(jobConfig.getJobEnvironment().encode())
+                                                            .withVolumes(dataVolume)
+                                                            .withHostConfig(HostConfig.newHostConfig()
+                                                                                      .withBinds(dataVolumeBind));
 
-                jobConfig.setProcessContainerId(createContainer(createContainerCmd));
-                startContainer(jobConfig.getProcessContainerId());
-                waitForCompletion(jobConfig.getProcessContainerId(), jobConfig.getTimeout().orElse(DEFAULT_TIMEOUT));
-                InspectContainerResponse inspect = getExitCode(jobConfig.getProcessContainerId());
+            jobConfig.setProcessContainerId(createContainer(createContainerCmd));
+            startContainer(jobConfig.getProcessContainerId());
 
-                Integer exitCode = inspect.getState().getExitCode();
-                if (exitCode != null && exitCode != 0) {
-                    throw new ExecutionException("process exited with non-zero exit code " + exitCode);
-                }
+            if (!waitForCompletion(jobConfig.getProcessContainerId(), jobConfig.getProcessTimeout().orElse(null))) {
+                stopContainer(jobConfig.getHelperContainerId());
+            }
 
-            } catch (DockerException | InterruptedException ex) {
-                throw new ExecutionException(ex);
+            Integer exitCode = getExitCode(jobConfig.getProcessContainerId());
+            if (exitCode == null) {
+                throw new ExecutionException("process did not exit");
+            }
+            if (exitCode != 0) {
+                throw new ExecutionException(String.format("process exited with non-zero exit code %d", exitCode));
             }
             DockerOutputProcessor outputProcessor = new DockerOutputProcessor(jobConfig);
 
@@ -169,6 +167,7 @@ public class DockerAlgorithm extends AbstractAlgorithm {
         } catch (Throwable t) {
             // in case the process fails, the clean will not be initiated by the result persistence
             DockerUtils.cleanup(jobConfig);
+            Throwables.throwIfInstanceOf(t, ExecutionException.class);
             throw new ExecutionException(t);
         }
     }
@@ -196,22 +195,29 @@ public class DockerAlgorithm extends AbstractAlgorithm {
         return cmd;
     }
 
-    private InspectContainerResponse getExitCode(String containerId) throws InterruptedException {
-        // on rare occasions this could happen before the container finished
-        // lets wait five more minutes
-        long waitStart = System.currentTimeMillis();
-        long waitTime = jobConfig.getTimeout().orElse(DEFAULT_TIMEOUT).toMillis();
-        while ((System.currentTimeMillis() - waitStart) < waitTime) {
-            InspectContainerResponse inspectResp = inspectContainer(containerId);
-            Boolean running = inspectResp.getState().getRunning();
-            if (running == null || !running) {
-                break;
-            }
-
-            LOG.info("Container still running, lost log listener. Waiting to finish");
+    private Integer getExitCode(String containerId) throws InterruptedException {
+        while (isRunning(containerId)) {
+            LOG.info("Container still running, waiting to finish");
             Thread.sleep(10000);
         }
-        return inspectContainer(containerId);
+        InspectContainerResponse inspectContainerResponse = inspectContainer(containerId);
+        return inspectContainerResponse.getState().getExitCode();
+    }
+
+    private void stopContainer(String containerId) {
+        Optional<Duration> timeout = jobConfig.getStopTimeout();
+        if (timeout.isPresent()) {
+            int seconds = timeout.get().getSeconds() >= Integer.MAX_VALUE
+                          ? Integer.MAX_VALUE : (int) timeout.get().getSeconds();
+            jobConfig.client().stopContainerCmd(containerId).withTimeout(seconds).exec();
+        } else {
+            jobConfig.client().killContainerCmd(containerId).exec();
+        }
+    }
+
+    private boolean isRunning(String containerId) {
+        Boolean running = inspectContainer(containerId).getState().getRunning();
+        return running != null && running;
     }
 
     private String[] createDirectories(String... directories) {
@@ -241,45 +247,46 @@ public class DockerAlgorithm extends AbstractAlgorithm {
     }
 
     private CreateContainerCmd createContainerCmd(String image) {
-        CreateContainerCmd command = jobConfig.client().createContainerCmd(image);
-        jobConfig.getUser().map(user -> jobConfig.getGroup()
-                                                 .map(group -> String.format("%s:%s", user, group))
-                                                 .orElse(user))
-                 .ifPresent(command::withUser);
-        // add some metadata to the container
-        command.withLabels(createLabels());
+        CreateContainerCmd command = jobConfig.client().createContainerCmd(image).withLabels(createLabels());
+        getUserAndGroup().ifPresent(command::withUser);
         return command;
+    }
+
+    private Optional<String> getUserAndGroup() {
+        return jobConfig.getUser().map(user -> jobConfig.getGroup()
+                                                        .map(group -> String.format("%s:%s", user, group))
+                                                        .orElse(user));
     }
 
     private Map<String, String> createLabels() {
         Map<String, String> labels = new HashMap<>();
-        labels.put(Labels.JOB_ID, jobConfig.context().getJobId().getValue());
-        labels.put(Labels.JOB_TIME, DateTime.now(DateTimeZone.UTC).toString());
-        labels.put(Labels.PROCESS_ID, getDescription().getId().getValue());
-        labels.put(Labels.PROCESS_TITLE, getDescription().getTitle().getValue());
-        labels.put(Labels.PROCESS_ABSTRACT, getDescription().getAbstract().map(OwsLanguageString::getValue).orElse(""));
-        labels.put(Labels.PROCESS_VERSION, getDescription().getVersion());
-        labels.put(Labels.VERSION, jobConfig.getJavaPsVersion());
+        labels.put(Label.JOB_ID, jobConfig.context().getJobId().getValue());
+        labels.put(Label.JOB_TIME, DateTime.now(DateTimeZone.UTC).toString());
+        labels.put(Label.PROCESS_ID, getDescription().getId().getValue());
+        labels.put(Label.PROCESS_TITLE, getDescription().getTitle().getValue());
+        labels.put(Label.PROCESS_ABSTRACT, getDescription().getAbstract().map(OwsLanguageString::getValue).orElse(""));
+        labels.put(Label.PROCESS_VERSION, getDescription().getVersion());
+        labels.put(Label.VERSION, jobConfig.getJavaPsVersion());
         return labels;
     }
 
-    private void waitForCompletion(String containerId) throws InterruptedException {
-        waitForCompletion(containerId, null);
-    }
-
-    private void waitForCompletion(String containerId, Duration timeout) throws InterruptedException {
+    private boolean waitForCompletion(String containerId, Duration timeout) throws InterruptedException {
         LoggingCallback callback = createCallback(containerId);
         if (timeout == null) {
             callback.awaitCompletion();
+            return true;
         } else {
-            callback.awaitCompletion(timeout.toMillis(), TimeUnit.MILLISECONDS);
+            return callback.awaitCompletion(timeout.toMillis(), TimeUnit.MILLISECONDS);
         }
     }
 
     private LoggingCallback createCallback(String containerId) {
         return jobConfig.client().logContainerCmd(containerId)
-                        .withStdErr(true).withStdOut(true).withFollowStream(true)
-                        .withTailAll().exec(new LoggingCallback(jobConfig.log(), containerId));
+                        .withStdErr(true)
+                        .withStdOut(true)
+                        .withFollowStream(true)
+                        .withTailAll()
+                        .exec(new LoggingCallback(jobConfig.log(), containerId));
     }
 
     private List<OutputDefinition> getOutputDefinitions() {
