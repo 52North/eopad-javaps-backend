@@ -47,28 +47,28 @@ public class DockerJobConfigImpl extends DelegatingDockerConfig implements Docke
         this.description = Objects.requireNonNull(description);
         this.context = Objects.requireNonNull(context);
         this.environment = Objects.requireNonNull(environment);
-        this.log = LoggerFactory.getLogger(String.format("%s.%s",
-                                                         description.getId().getValue(),
-                                                         context.getJobId()));
+        String processId = description.getId().getValue();
+        String jobId = context.getJobId().getValue();
+        this.log = LoggerFactory.getLogger(String.format("%s.%s", processId, jobId));
     }
 
     @Override
-    public Logger getLog() {
+    public Logger log() {
         return log;
     }
 
     @Override
-    public TypedProcessDescription getDescription() {
+    public TypedProcessDescription description() {
         return this.description;
     }
 
     @Override
-    public ProcessExecutionContext getContext() {
+    public ProcessExecutionContext context() {
         return this.context;
     }
 
     @Override
-    public DockerClient getClient() {
+    public DockerClient client() {
         return this.dockerClient;
     }
 

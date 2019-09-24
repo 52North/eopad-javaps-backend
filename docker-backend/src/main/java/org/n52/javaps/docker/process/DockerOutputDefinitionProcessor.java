@@ -32,7 +32,7 @@ public class DockerOutputDefinitionProcessor
 
     @Override
     public List<DockerOutputInfo> process(List<OutputDefinition> outputDefinitions) {
-        return createOutputs(getDescription(), getJobEnvironment().withPrefix(Environment.OUTPUT), outputDefinitions);
+        return createOutputs(description(), getJobEnvironment().withPrefix(Environment.OUTPUT), outputDefinitions);
     }
 
     private List<DockerOutputInfo> createOutputs(TypedProcessOutputDescriptionContainer description,

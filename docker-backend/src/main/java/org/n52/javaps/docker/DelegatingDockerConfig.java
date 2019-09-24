@@ -27,7 +27,7 @@ public class DelegatingDockerConfig implements DockerConfig {
         this.delegate = Objects.requireNonNull(delegate);
     }
 
-    protected DockerConfig getDelegate() {
+    protected DockerConfig getJobConfig() {
         return delegate;
     }
 

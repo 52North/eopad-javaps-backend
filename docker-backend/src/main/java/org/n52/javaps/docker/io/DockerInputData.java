@@ -14,48 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.n52.javaps.docker;
+package org.n52.javaps.docker.io;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import org.n52.javaps.io.complex.ComplexData;
 import org.n52.shetland.ogc.wps.Format;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.Objects;
 
-public class DockerData implements ComplexData<byte[]> {
+public class DockerInputData extends FormattedData<byte[]> {
     private static final long serialVersionUID = -3925986655313130283L;
     private byte[] content;
-    private Format format;
 
     @SuppressFBWarnings("EI_EXPOSE_REP2")
-    public DockerData(byte[] content, Format format) {
+    public DockerInputData(byte[] content, Format format) {
+        super(format);
         this.content = Objects.requireNonNull(content);
-        this.format = Objects.requireNonNull(format);
     }
 
     @Override
     @SuppressFBWarnings("EI_EXPOSE_REP")
     public byte[] getPayload() {
         return this.content;
-    }
-
-    public Format getFormat() {
-        return format;
-    }
-
-    private void writeObject(ObjectOutputStream out) throws IOException {
-        out.writeObject(content);
-        out.writeUTF(format.getMimeType().orElse(null));
-        out.writeUTF(format.getEncoding().orElse(null));
-        out.writeUTF(format.getSchema().orElse(null));
-    }
-
-    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        this.content = (byte[]) in.readObject();
-        this.format = new Format(in.readUTF(), in.readUTF(), in.readUTF());
     }
 
     @Override

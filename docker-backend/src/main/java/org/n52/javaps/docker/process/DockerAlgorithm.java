@@ -36,6 +36,8 @@ import org.n52.javaps.docker.DockerConfig;
 import org.n52.javaps.docker.Environment;
 import org.n52.javaps.docker.Labels;
 import org.n52.javaps.docker.TypedDescriptionBuilder;
+import org.n52.javaps.docker.io.Closer;
+import org.n52.javaps.docker.util.DockerUtils;
 import org.n52.javaps.engine.ProcessExecutionContext;
 import org.n52.shetland.ogc.ows.OwsLanguageString;
 import org.n52.shetland.ogc.wps.OutputDefinition;
@@ -87,10 +89,6 @@ public class DockerAlgorithm extends AbstractAlgorithm {
         this.executionUnit = (DockerExecutionUnit) applicationPackage.getExecutionUnits().iterator().next();
     }
 
-    private Logger getJobLog() {
-        return jobConfig.getLog();
-    }
-
     @Override
     protected TypedProcessDescription createDescription() {
         return descriptionBuilder.createDescription(applicationPackage.getProcessDescription().getProcessDescription());
@@ -137,7 +135,7 @@ public class DockerAlgorithm extends AbstractAlgorithm {
             try {
                 waitForCompletion(jobConfig.getHelperContainerId());
             } catch (InterruptedException ex) {
-                getJobLog().warn("helper container did not stop", ex);
+                jobConfig.log().warn("helper container did not stop", ex);
             }
 
             try {
@@ -163,14 +161,20 @@ public class DockerAlgorithm extends AbstractAlgorithm {
             DockerOutputProcessor outputProcessor = new DockerOutputProcessor(jobConfig);
 
             // copy the generated outputs
-            outputProcessor.process(outputInfos);
-        } finally {
-            cleanUp();
+            Closer closer = outputProcessor.process(outputInfos);
+            if (!closer.isCleanupDeferred()) {
+                // no outputs are waiting to be copied, clean up now
+                DockerUtils.cleanup(jobConfig);
+            }
+        } catch (Throwable t) {
+            // in case the process fails, the clean will not be initiated by the result persistence
+            DockerUtils.cleanup(jobConfig);
+            throw new ExecutionException(t);
         }
     }
 
     private void pullImageIfNotPresent(String image) throws ExecutionException {
-        Logger log = getJobLog();
+        Logger log = jobConfig.log();
         log.info("Pulling image {}.", image);
         pullImage(image);
         log.info("Successfully pulled image {}.", image);
@@ -179,26 +183,17 @@ public class DockerAlgorithm extends AbstractAlgorithm {
     private void pullImage(String image) throws ExecutionException {
         PullImageCmd cmd = pullImageCmd(DockerImage.fromString(image));
         try {
-            cmd.exec(new PullCallback(getJobLog())).awaitCompletion();
+            cmd.exec(new PullCallback(jobConfig.log())).awaitCompletion();
         } catch (InterruptedException | DockerClientException e) {
             throw new ExecutionException("could not pull image " + image, e);
         }
     }
 
     private PullImageCmd pullImageCmd(DockerImage image) {
-        PullImageCmd cmd = jobConfig.getClient().pullImageCmd(image.getRepository())
+        PullImageCmd cmd = jobConfig.client().pullImageCmd(image.getRepository())
                                     .withTag(image.getTag().orElse(DockerImage.LATEST));
         image.getRegistry().ifPresent(cmd::withRegistry);
         return cmd;
-    }
-
-    private void cleanUp() {
-        // remove the helper container
-        removeContainer(jobConfig.getHelperContainerId());
-        // remove the helper container
-        removeContainer(jobConfig.getProcessContainerId());
-        // remove the data volume
-        removeVolume(jobConfig.getVolumeId());
     }
 
     private InspectContainerResponse getExitCode(String containerId) throws InterruptedException {
@@ -223,50 +218,30 @@ public class DockerAlgorithm extends AbstractAlgorithm {
         return Stream.concat(Stream.of("mkdir", "-p"), Streams.stream(directories)).toArray(String[]::new);
     }
 
-    private void removeVolume(String volumeId) {
-        if (volumeId != null) {
-            try {
-                jobConfig.getClient().removeVolumeCmd(volumeId).exec();
-            } catch (DockerException ex) {
-                getJobLog().error("unable to remove volume " + volumeId, ex);
-            }
-        }
-    }
-
-    private void removeContainer(String containerId) {
-        if (containerId != null) {
-            try {
-                jobConfig.getClient().removeContainerCmd(containerId).withForce(true).exec();
-            } catch (DockerException ex) {
-                getJobLog().error("unable to remove container " + containerId, ex);
-            }
-        }
-    }
-
     private InspectContainerResponse inspectContainer(String containerId) {
-        return jobConfig.getClient().inspectContainerCmd(containerId).exec();
+        return jobConfig.client().inspectContainerCmd(containerId).exec();
     }
 
     private String createVolume() {
-        return jobConfig.getClient().createVolumeCmd().exec().getName();
+        return jobConfig.client().createVolumeCmd().exec().getName();
     }
 
     private void startContainer(String containerId) {
-        getJobLog().debug("Starting container {}", containerId);
-        jobConfig.getClient().startContainerCmd(containerId).exec();
-        getJobLog().debug("Started container {}", containerId);
+        jobConfig.log().debug("Starting container {}", containerId);
+        jobConfig.client().startContainerCmd(containerId).exec();
+        jobConfig.log().debug("Started container {}", containerId);
     }
 
     private String createContainer(CreateContainerCmd command) {
         String image = command.getImage();
-        getJobLog().debug("Creating container from image {}", image);
+        jobConfig.log().debug("Creating container from image {}", image);
         String containerId = command.exec().getId();
-        getJobLog().debug("Created container {} from image {}", containerId, image);
+        jobConfig.log().debug("Created container {} from image {}", containerId, image);
         return containerId;
     }
 
     private CreateContainerCmd createContainerCmd(String image) {
-        CreateContainerCmd command = jobConfig.getClient().createContainerCmd(image);
+        CreateContainerCmd command = jobConfig.client().createContainerCmd(image);
         jobConfig.getUser().map(user -> jobConfig.getGroup()
                                                  .map(group -> String.format("%s:%s", user, group))
                                                  .orElse(user))
@@ -278,7 +253,7 @@ public class DockerAlgorithm extends AbstractAlgorithm {
 
     private Map<String, String> createLabels() {
         Map<String, String> labels = new HashMap<>();
-        labels.put(Labels.JOB_ID, jobConfig.getContext().getJobId().getValue());
+        labels.put(Labels.JOB_ID, jobConfig.context().getJobId().getValue());
         labels.put(Labels.JOB_TIME, DateTime.now(DateTimeZone.UTC).toString());
         labels.put(Labels.PROCESS_ID, getDescription().getId().getValue());
         labels.put(Labels.PROCESS_TITLE, getDescription().getTitle().getValue());
@@ -302,14 +277,14 @@ public class DockerAlgorithm extends AbstractAlgorithm {
     }
 
     private LoggingCallback createCallback(String containerId) {
-        return jobConfig.getClient().logContainerCmd(containerId)
+        return jobConfig.client().logContainerCmd(containerId)
                         .withStdErr(true).withStdOut(true).withFollowStream(true)
-                        .withTailAll().exec(new LoggingCallback(getJobLog(), containerId));
+                        .withTailAll().exec(new LoggingCallback(jobConfig.log(), containerId));
     }
 
     private List<OutputDefinition> getOutputDefinitions() {
         return getDescription().getOutputs().stream()
-                               .map(jobConfig.getContext()::getOutputDefinition)
+                               .map(jobConfig.context()::getOutputDefinition)
                                .filter(Optional::isPresent).map(Optional::get)
                                .collect(toList());
     }

@@ -34,28 +34,28 @@ public class DelegatingDockerJobConfig extends DelegatingDockerConfig implements
     }
 
     @Override
-    protected DockerJobConfig getDelegate() {
+    protected DockerJobConfig getJobConfig() {
         return delegate;
     }
 
     @Override
-    public Logger getLog() {
-        return delegate.getLog();
+    public Logger log() {
+        return delegate.log();
     }
 
     @Override
-    public DockerClient getClient() {
-        return delegate.getClient();
+    public DockerClient client() {
+        return delegate.client();
     }
 
     @Override
-    public TypedProcessDescription getDescription() {
-        return delegate.getDescription();
+    public TypedProcessDescription description() {
+        return delegate.description();
     }
 
     @Override
-    public ProcessExecutionContext getContext() {
-        return delegate.getContext();
+    public ProcessExecutionContext context() {
+        return delegate.context();
     }
 
     @Override

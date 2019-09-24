@@ -28,6 +28,8 @@ import org.n52.javaps.description.TypedProcessDescription;
 import org.n52.javaps.description.TypedProcessInputDescription;
 import org.n52.javaps.description.TypedProcessOutputDescription;
 import org.n52.javaps.description.impl.TypedProcessDescriptionFactory;
+import org.n52.javaps.docker.io.DockerInputData;
+import org.n52.javaps.docker.io.DockerOutputData;
 import org.n52.javaps.io.literal.LiteralType;
 import org.n52.javaps.io.literal.LiteralTypeRepository;
 import org.n52.javaps.io.literal.xsd.LiteralStringType;
@@ -141,12 +143,12 @@ public class DockerTypedDescriptionBuilder implements TypedDescriptionBuilder {
 
     @Override
     public TypedComplexInputDescription createComplexInputDescription(ComplexInputDescription input) {
-        return descriptionFactory.complexInput(input).withType(DockerData.class).build();
+        return descriptionFactory.complexInput(input).withType(DockerInputData.class).build();
     }
 
     @Override
     public TypedComplexOutputDescription createComplexOutputDescription(ComplexOutputDescription output) {
-        return descriptionFactory.complexOutput(output).withType(DockerData.class).build();
+        return descriptionFactory.complexOutput(output).withType(DockerOutputData.class).build();
     }
 
 }

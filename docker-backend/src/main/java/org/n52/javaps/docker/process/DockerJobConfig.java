@@ -24,13 +24,13 @@ import org.n52.javaps.engine.ProcessExecutionContext;
 import org.slf4j.Logger;
 
 public interface DockerJobConfig extends DockerConfig {
-    Logger getLog();
+    Logger log();
 
-    DockerClient getClient();
+    DockerClient client();
 
-    TypedProcessDescription getDescription();
+    TypedProcessDescription description();
 
-    ProcessExecutionContext getContext();
+    ProcessExecutionContext context();
 
     Environment getJobEnvironment();
 

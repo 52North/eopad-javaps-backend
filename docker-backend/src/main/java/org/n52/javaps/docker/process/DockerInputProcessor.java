@@ -27,7 +27,7 @@ import org.n52.javaps.description.TypedGroupInputDescription;
 import org.n52.javaps.description.TypedLiteralInputDescription;
 import org.n52.javaps.description.TypedProcessInputDescription;
 import org.n52.javaps.description.TypedProcessInputDescriptionContainer;
-import org.n52.javaps.docker.DockerData;
+import org.n52.javaps.docker.io.DockerInputData;
 import org.n52.javaps.docker.Environment;
 import org.n52.javaps.io.Data;
 import org.n52.javaps.io.EncodingException;
@@ -64,7 +64,7 @@ public class DockerInputProcessor extends AbstractDockerProcessor<ProcessInputs,
     @Override
     public Void process(ProcessInputs inputs) throws ExecutionException {
         try {
-            createInputs(getDescription(), getJobEnvironment().withPrefix(Environment.INPUT), inputs);
+            createInputs(description(), getJobEnvironment().withPrefix(Environment.INPUT), inputs);
         } catch (IOException | EncodingException e) {
             throw new ExecutionException("error creating inputs", e);
         }
@@ -86,7 +86,7 @@ public class DockerInputProcessor extends AbstractDockerProcessor<ProcessInputs,
             } else if (description.isGroup()) {
                 createGroupInput(description.asGroup(), e, entry.getValue());
             } else {
-                getLog().warn("Unsupported input type: {}", description);
+                log().warn("Unsupported input type: {}", description);
             }
         }
     }
@@ -142,14 +142,14 @@ public class DockerInputProcessor extends AbstractDockerProcessor<ProcessInputs,
         if (description.getOccurence().isMultiple()) {
             int index = 0;
             for (Data<?> data : values) {
-                createComplexInput(environment.withPrefix(++index), (DockerData) data);
+                createComplexInput(environment.withPrefix(++index), (DockerInputData) data);
             }
         } else if (!values.isEmpty()) {
-            createComplexInput(environment, (DockerData) values.iterator().next());
+            createComplexInput(environment, (DockerInputData) values.iterator().next());
         }
     }
 
-    private void createComplexInput(Environment environment, DockerData data) throws IOException {
+    private void createComplexInput(Environment environment, DockerInputData data) throws IOException {
         String name = environment.getPrefix();
         byte[] payload = data.getPayload();
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -169,7 +169,7 @@ public class DockerInputProcessor extends AbstractDockerProcessor<ProcessInputs,
     }
 
     private CopyArchiveToContainerCmd copyArchiveToContainerCmd() {
-        return getClient().copyArchiveToContainerCmd(containerId);
+        return client().copyArchiveToContainerCmd(containerId);
     }
 
     private void createGroupInput(TypedGroupInputDescription description, Environment environment,
