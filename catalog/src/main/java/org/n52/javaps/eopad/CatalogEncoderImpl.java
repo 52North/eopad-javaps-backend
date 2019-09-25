@@ -49,7 +49,6 @@ import java.time.OffsetDateTime;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -154,34 +153,36 @@ public class CatalogEncoderImpl implements CatalogEncoder {
                              .ifPresent(description -> properties.put(JsonConstants.ABSTRACT, description));
 
         OwsServiceProvider serviceProvider = config.getServiceProvider();
+
         OwsResponsibleParty serviceContact = serviceProvider.getServiceContact();
 
-        Stream.of(serviceContact.getIndividualName().map(individualName -> {
-                      ObjectNode individualContactPoint = Json.nodeFactory().objectNode();
-                      individualContactPoint.put(JsonConstants.TYPE, ContactPointType.INDIVIDUAL_TYPE)
-                                            .put(JsonConstants.NAME, individualName);
-                      serviceContact.getContactInfo()
-                                    .flatMap(OwsContact::getAddress)
-                                    .map(OwsAddress::getElectronicMailAddress)
-                                    .filter(list -> !list.isEmpty())
-                                    .map(List::iterator)
-                                    .map(Iterator::next)
-                                    .ifPresent(mail -> individualContactPoint.put(JsonConstants.EMAIL, mail));
-                      return individualContactPoint;
-                  }),
-                  serviceContact.getOrganisationName().map(organizationName -> {
-                      ObjectNode organisationContactPoint = Json.nodeFactory().objectNode();
-                      organisationContactPoint.put(JsonConstants.TYPE, ContactPointType.ORGANIZATION_TYPE)
-                                              .put(JsonConstants.NAME, organizationName);
-                      serviceContact.getContactInfo()
-                                    .flatMap(OwsContact::getOnlineResource)
-                                    .flatMap(Link::getHref)
-                                    .map(java.net.URI::toString)
-                                    .ifPresent(uri -> organisationContactPoint.put(JsonConstants.URI, uri));
-                      return organisationContactPoint;
-                  }))
-              .filter(Optional::isPresent).map(Optional::get)
-              .forEach(node -> properties.withArray(JsonConstants.CONTACT_POINT).add(node));
+        ArrayNode contactPoint = properties.putArray(JsonConstants.CONTACT_POINT);
+        ObjectNode organizationContactPoint = contactPoint.addObject();
+        organizationContactPoint.put(JsonConstants.TYPE, ContactPointType.ORGANIZATION_TYPE)
+                                .put(JsonConstants.NAME, serviceProvider.getProviderName());
+        serviceProvider.getProviderSite()
+                       .flatMap(Link::getHref)
+                       .map(java.net.URI::toString)
+                       .ifPresent(uri -> organizationContactPoint.put(JsonConstants.URI, uri));
+
+        serviceContact.getIndividualName().map(individualName -> {
+            ObjectNode individualContactPoint = Json.nodeFactory().objectNode();
+            individualContactPoint.put(JsonConstants.TYPE, ContactPointType.INDIVIDUAL_TYPE)
+                                  .put(JsonConstants.NAME, individualName);
+            serviceContact.getContactInfo()
+                          .flatMap(OwsContact::getAddress)
+                          .map(OwsAddress::getElectronicMailAddress)
+                          .filter(list -> !list.isEmpty())
+                          .map(List::iterator)
+                          .map(Iterator::next)
+                          .ifPresent(mail -> individualContactPoint.put(JsonConstants.EMAIL, mail));
+            serviceContact.getContactInfo()
+                          .flatMap(OwsContact::getOnlineResource)
+                          .flatMap(Link::getHref)
+                          .map(java.net.URI::toString)
+                          .ifPresent(uri -> individualContactPoint.put(JsonConstants.URI, uri));
+            return individualContactPoint;
+        }).ifPresent(contactPoint::add);
 
         ArrayNode offerings = properties.putArray(JsonConstants.OFFERINGS);
 
