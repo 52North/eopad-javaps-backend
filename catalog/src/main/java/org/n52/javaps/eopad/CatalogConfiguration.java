@@ -29,6 +29,16 @@ public interface CatalogConfiguration {
 
     HttpUrl getServiceURL();
 
+    HttpUrl getExecuteUrl(String value);
+
+    default HttpUrl getExecuteUrl(OwsCode id) {
+        return getExecuteUrl(id.getValue());
+    }
+
+    default HttpUrl getExecuteUrl(ProcessDescription description) {
+        return getExecuteUrl(description.getId());
+    }
+
     HttpUrl getProcessUrl(String id);
 
     default HttpUrl getProcessUrl(OwsCode id) {

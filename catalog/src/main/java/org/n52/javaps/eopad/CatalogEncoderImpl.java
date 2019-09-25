@@ -24,6 +24,7 @@ import org.n52.faroe.annotation.Configurable;
 import org.n52.janmayen.Json;
 import org.n52.janmayen.http.HTTPMethods;
 import org.n52.javaps.engine.Engine;
+import org.n52.shetland.ogc.ows.OwsCode;
 import org.n52.shetland.ogc.wps.ProcessOffering;
 import org.n52.shetland.ogc.wps.ap.ApplicationPackage;
 import org.n52.shetland.ogc.wps.description.ProcessDescription;
@@ -36,6 +37,9 @@ import org.springframework.stereotype.Component;
 
 import java.time.OffsetDateTime;
 import java.util.Objects;
+import java.util.Set;
+
+import static java.util.stream.Collectors.toSet;
 
 @Component
 @Configurable
@@ -145,14 +149,41 @@ public class CatalogEncoderImpl implements CatalogEncoder {
                   .put(JsonConstants.TYPE, MediaTypes.APPLICATION_JSON)
                   .putObject(JsonConstants.REQUEST).put(JsonConstants.TYPE, MediaTypes.APPLICATION_JSON);
 
+        Set<OwsCode> transactionalIdentifiers = config.getApplicationPackages()
+                                                      .map(ApplicationPackage::getProcessDescription)
+                                                      .map(ProcessOffering::getProcessDescription)
+                                                      .map(ProcessDescription::getId)
+                                                      .collect(toSet());
+
         for (ProcessDescription description : engine.getProcessDescriptions()) {
             JsonNode content = getProcessOfferingEncoder().encode(new ProcessOffering(description));
+            String processUrl = config.getProcessUrl(description).toString();
+
             operations.addObject()
                       .put(JsonConstants.CODE, Operations.DESCRIBE_PROCESS)
                       .put(JsonConstants.METHOD, HTTPMethods.GET)
-                      .put(JsonConstants.HREF, config.getProcessUrl(description).toString())
+                      .put(JsonConstants.HREF, processUrl)
                       .put(JsonConstants.TYPE, MediaTypes.APPLICATION_JSON)
                       .set(JsonConstants.CONTENT, content);
+            operations.addObject()
+                      .put(JsonConstants.CODE, Operations.EXECUTE_PROCESS)
+                      .put(JsonConstants.METHOD, HTTPMethods.POST)
+                      .put(JsonConstants.HREF, config.getExecuteUrl(description).toString())
+                      .put(JsonConstants.TYPE, MediaTypes.APPLICATION_JSON)
+                      .putObject(JsonConstants.REQUEST).put(JsonConstants.TYPE, MediaTypes.APPLICATION_JSON);
+
+            if (transactionalIdentifiers.contains(description.getId())) {
+                operations.addObject()
+                          .put(JsonConstants.CODE, Operations.DELETE_PROCESS)
+                          .put(JsonConstants.METHOD, HTTPMethods.DELETE)
+                          .put(JsonConstants.HREF, processUrl);
+                operations.addObject()
+                          .put(JsonConstants.CODE, Operations.UPDATE_PROCESS)
+                          .put(JsonConstants.METHOD, HTTPMethods.PUT)
+                          .put(JsonConstants.HREF, processUrl)
+                          .put(JsonConstants.TYPE, MediaTypes.APPLICATION_JSON)
+                          .putObject(JsonConstants.REQUEST).put(JsonConstants.TYPE, MediaTypes.APPLICATION_JSON);
+            }
         }
         return root;
     }

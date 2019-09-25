@@ -22,16 +22,15 @@ import org.n52.janmayen.stream.Streams;
 import org.n52.javaps.transactional.TransactionalAlgorithmRepository;
 import org.n52.shetland.ogc.wps.ap.ApplicationPackage;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.joining;
+import static java.util.stream.Collectors.toList;
 
 public class CatalogConfigurationImpl implements CatalogConfiguration {
     private final HttpUrl serviceURL;
@@ -56,12 +55,18 @@ public class CatalogConfigurationImpl implements CatalogConfiguration {
     }
 
     @Override
+    public HttpUrl getExecuteUrl(String id) {
+        return getProcessUrl(id).newBuilder()
+                                .addPathSegment("jobs")
+                                .build();
+    }
+
+    @Override
     public HttpUrl getProcessUrl(String id) {
-        HttpUrl resolve = getServiceURL().resolve("processes/");
-        if (resolve == null) {
-            throw new IllegalArgumentException();
-        }
-        return resolve.resolve(id);
+        return getServiceURL().newBuilder()
+                              .addPathSegment("processes")
+                              .addPathSegment(id)
+                              .build();
     }
 
     @Override
@@ -80,11 +85,9 @@ public class CatalogConfigurationImpl implements CatalogConfiguration {
     }
 
     private String asIdentifier(HttpUrl url) {
-        List<String> domain = Streams.stream(url.host().split("\\."))
-                                     .collect(Collectors.toList());
+        List<String> domain = Streams.stream(url.host().split("\\.")).collect(toList());
         Collections.reverse(domain);
-        Stream<String> path = Arrays.stream(url.encodedPath().split("/"))
-                                    .filter(Predicates.not(String::isEmpty));
+        Stream<String> path = Streams.stream(url.encodedPath().split("/")).filter(Predicates.not(String::isEmpty));
         return Stream.concat(domain.stream(), path).collect(joining("."));
     }
 }
