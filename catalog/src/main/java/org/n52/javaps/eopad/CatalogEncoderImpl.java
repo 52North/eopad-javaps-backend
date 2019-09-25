@@ -101,7 +101,7 @@ public class CatalogEncoderImpl implements CatalogEncoder {
         properties.put(JsonConstants.KIND, Kinds.SERVICE_TYPE);
         properties.put(JsonConstants.TITLE, getServiceTitle(config));
         properties.put(JsonConstants.UPDATED, OffsetDateTime.now().toString());
-        ObjectNode links = root.putObject(JsonConstants.LINKS);
+        ObjectNode links = properties.putObject(JsonConstants.LINKS);
         ArrayNode profiles = links.putArray(JsonConstants.PROFILES);
         profiles.addObject().put(JsonConstants.HREF, Specifications.OWC_GEOJSON_CORE);
         profiles.addObject().put(JsonConstants.HREF, Specifications.EOPAD_GEOJSON_CORE);
