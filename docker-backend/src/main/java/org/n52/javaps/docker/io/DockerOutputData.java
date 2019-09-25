@@ -45,10 +45,14 @@ public class DockerOutputData extends FormattedData<DockerFile> {
     }
 
     private void writeObject(ObjectOutputStream out) throws IOException {
-        throw new IOException(getClass().getName() + "is not serializable");
+        unserializable();
     }
 
     private void readObject(ObjectInputStream in) throws IOException {
+        unserializable();
+    }
+
+    private void unserializable() throws IOException {
         throw new IOException(getClass().getName() + "is not serializable");
     }
 

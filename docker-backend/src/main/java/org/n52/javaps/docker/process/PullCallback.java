@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import javax.annotation.CheckForNull;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -33,14 +34,14 @@ public class PullCallback extends ResultCallbackTemplate<PullCallback, PullRespo
 
     private final Logger log;
 
-    private boolean isSwarm = false;
-    private Map<String, PullResponseItem> results = null;
+    private boolean isSwarm;
+    private Map<String, PullResponseItem> results;
 
     @CheckForNull
-    private PullResponseItem latestItem = null;
+    private PullResponseItem latestItem;
 
     public PullCallback(Logger log) {
-        this.log = log;
+        this.log = Objects.requireNonNull(log);
     }
 
     @Override
@@ -100,16 +101,24 @@ public class PullCallback extends ResultCallbackTemplate<PullCallback, PullRespo
             }
 
             if (pullFailed) {
-                throw new DockerClientException("Could not pull image: " + sb.toString());
+                throw canNotPullImageException(sb.toString());
             }
+        }
+    }
+
+    private DockerClientException canNotPullImageException(String message) {
+        if (message == null) {
+            return new DockerClientException("Could not pull image");
+        } else {
+            return new DockerClientException("Could not pull image: " + message);
         }
     }
 
     private void checkDockerClientPullSuccessful() {
         if (latestItem == null) {
-            throw new DockerClientException("Could not pull image");
+            throw canNotPullImageException(null);
         } else if (!latestItem.isPullSuccessIndicated()) {
-            throw new DockerClientException("Could not pull image: " + messageFromPullResult(latestItem));
+            throw canNotPullImageException(messageFromPullResult(latestItem));
         }
     }
 

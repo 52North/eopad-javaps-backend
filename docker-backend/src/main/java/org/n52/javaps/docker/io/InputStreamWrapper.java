@@ -19,7 +19,7 @@ package org.n52.javaps.docker.io;
 import java.io.IOException;
 import java.io.InputStream;
 
-class InputStreamWrapper extends InputStream {
+public class InputStreamWrapper extends InputStream {
     private final InputStream delegate;
 
     public InputStreamWrapper(InputStream delegate) {
@@ -61,8 +61,8 @@ class InputStreamWrapper extends InputStream {
     }
 
     @Override
-    public void mark(int readlimit) {
-        delegate.mark(readlimit);
+    public void mark(int readLimit) {
+        delegate.mark(readLimit);
     }
 
     @Override

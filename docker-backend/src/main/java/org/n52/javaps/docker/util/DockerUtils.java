@@ -37,7 +37,9 @@ public class DockerUtils {
     private static final Pattern DOCKER_CGROUP_REGEX = Pattern.compile("^[0-9]+:[^:]*:/docker/([0-9a-z]{64})$");
     private static final InputStream EMPTY_INPUT_STREAM = new InputStream() {
         @Override
-        public int read() { return -1; }
+        public int read() {
+            return -1;
+        }
     };
 
     /**

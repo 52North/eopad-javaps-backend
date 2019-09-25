@@ -77,9 +77,9 @@ public class DockerImage {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        getRegistry().ifPresent(registry -> builder.append(registry).append('/'));
+        getRegistry().ifPresent(r -> builder.append(r).append('/'));
         builder.append(repository);
-        getTag().ifPresent(tag -> builder.append(':').append(tag));
+        getTag().ifPresent(t -> builder.append(':').append(t));
         return builder.toString();
     }
 
@@ -103,15 +103,16 @@ public class DockerImage {
     }
 
     public static DockerImage fromString(String name) {
-        String[] split = name.split("/", 1);
+        String rest = name;
+        String[] split = rest.split("/", 1);
         String repository;
         String registry = null;
         String tag = null;
         if (split.length > 1) {
             registry = split[0];
-            name = split[1];
+            rest = split[1];
         }
-        split = name.split(":", 1);
+        split = rest.split(":", 1);
         repository = split[0];
         if (split.length > 1) {
             tag = split[1];

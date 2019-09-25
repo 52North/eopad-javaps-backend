@@ -46,8 +46,9 @@ public class BasicAuthenticator implements Authenticator {
     }
 
     private int responseCount(Response response) {
+        Response r = response;
         int result = 1;
-        while ((response = response.priorResponse()) != null) {
+        while ((r = r.priorResponse()) != null) {
             result++;
         }
         return result;

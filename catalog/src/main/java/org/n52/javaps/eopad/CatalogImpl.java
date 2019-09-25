@@ -16,7 +16,6 @@
  */
 package org.n52.javaps.eopad;
 
-import okhttp3.Credentials;
 import okhttp3.HttpUrl;
 import org.n52.shetland.ogc.wps.ap.ApplicationPackage;
 
