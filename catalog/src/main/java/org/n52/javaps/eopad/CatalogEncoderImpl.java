@@ -109,7 +109,7 @@ public class CatalogEncoderImpl implements CatalogEncoder {
         ArrayNode hosts = links.putArray(JsonConstants.HOSTS);
         config.getApplicationPackages().forEach(ap -> hosts.addObject()
                                                            .put(JsonConstants.HREF, config.getCatalog().getURL(ap))
-                                                           .put(JsonConstants.TYPE, MediaTypes.APPLICATION_JSON)
+                                                           .put(JsonConstants.TYPE, MediaTypes.APPLICATION_GEO_JSON)
                                                            .put(JsonConstants.TITLE, getTitle(ap)));
 
         properties.putArray(JsonConstants.ENDPOINT_DESCRIPTION).add(config.getServiceURL().toString());
