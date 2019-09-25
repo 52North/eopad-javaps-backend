@@ -37,4 +37,10 @@ public interface JsonConstants {
     String PROPERTIES = "properties";
     String HOSTS = "hosts";
     String CONTENT = "content";
+    String KEYWORD = "keyword";
+    String ABSTRACT = "abstract";
+    String NAME = "name";
+    String URI = "uri";
+    String EMAIL = "email";
+    String CONTACT_POINT = "contactPoint";
 }

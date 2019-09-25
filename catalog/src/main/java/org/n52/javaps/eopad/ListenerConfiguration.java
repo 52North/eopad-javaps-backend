@@ -21,7 +21,10 @@ import okhttp3.OkHttpClient;
 import org.n52.faroe.Validation;
 import org.n52.faroe.annotation.Configurable;
 import org.n52.faroe.annotation.Setting;
+import org.n52.iceland.i18n.I18NSettings;
+import org.n52.iceland.ogc.ows.OwsServiceMetadataRepository;
 import org.n52.iceland.service.ServiceSettings;
+import org.n52.janmayen.i18n.LocaleHelper;
 import org.n52.javaps.eopad.http.BasicAuthenticator;
 import org.n52.javaps.eopad.http.LoggingInterceptor;
 import org.n52.javaps.transactional.TransactionalAlgorithmRepository;
@@ -33,6 +36,7 @@ import org.springframework.context.annotation.Configuration;
 
 import java.net.URI;
 import java.util.Collections;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 
@@ -41,8 +45,9 @@ import java.util.Set;
 public class ListenerConfiguration {
 
     private Set<TransactionalAlgorithmRepository> repositories = Collections.emptySet();
-
+    private OwsServiceMetadataRepository serviceMetadataRepository;
     private HttpUrl serviceURL;
+    private Locale defaultLocale;
 
     @Setting(ServiceSettings.SERVICE_URL)
     public void setServiceURL(URI serviceURL) {
@@ -57,6 +62,16 @@ public class ListenerConfiguration {
         }
         HttpUrl.Builder builder = httpUrl.newBuilder();
         this.serviceURL = builder.query(null).build();
+    }
+
+    @Setting(I18NSettings.I18N_DEFAULT_LANGUAGE)
+    public void setDefaultLanguage(String lang) {
+        this.defaultLocale = LocaleHelper.decode(lang);
+    }
+
+    @Autowired
+    public void setServiceMetadataRepository(OwsServiceMetadataRepository serviceMetadataRepository) {
+        this.serviceMetadataRepository = serviceMetadataRepository;
     }
 
     @Autowired(required = false)
@@ -96,7 +111,11 @@ public class ListenerConfiguration {
     }
 
     private CatalogConfigurationImpl createCatalogConfiguration(Catalog catalog) {
-        return new CatalogConfigurationImpl(catalog, repositories, serviceURL);
+        return new CatalogConfigurationImpl(catalog,
+                                            repositories,
+                                            serviceMetadataRepository,
+                                            serviceURL,
+                                            defaultLocale);
     }
 
 }

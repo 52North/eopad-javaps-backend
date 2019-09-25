@@ -23,11 +23,21 @@ import okhttp3.HttpUrl;
 import org.n52.faroe.annotation.Configurable;
 import org.n52.janmayen.Json;
 import org.n52.janmayen.http.HTTPMethods;
+import org.n52.janmayen.i18n.LocalizedString;
 import org.n52.javaps.engine.Engine;
+import org.n52.shetland.ogc.ows.OwsAddress;
 import org.n52.shetland.ogc.ows.OwsCode;
+import org.n52.shetland.ogc.ows.OwsContact;
+import org.n52.shetland.ogc.ows.OwsKeyword;
+import org.n52.shetland.ogc.ows.OwsLanguageString;
+import org.n52.shetland.ogc.ows.OwsResponsibleParty;
+import org.n52.shetland.ogc.ows.OwsServiceIdentification;
+import org.n52.shetland.ogc.ows.OwsServiceProvider;
 import org.n52.shetland.ogc.wps.ProcessOffering;
 import org.n52.shetland.ogc.wps.ap.ApplicationPackage;
 import org.n52.shetland.ogc.wps.description.ProcessDescription;
+import org.n52.shetland.w3c.xlink.Link;
+import org.n52.svalbard.coding.json.JSONConstants;
 import org.n52.svalbard.encode.Encoder;
 import org.n52.svalbard.encode.EncoderRepository;
 import org.n52.svalbard.encode.exception.EncodingException;
@@ -36,8 +46,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.OffsetDateTime;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toSet;
 
@@ -48,6 +62,7 @@ public class CatalogEncoderImpl implements CatalogEncoder {
     private static final String PROCESSES_PATH = "processes/";
     private static final String CONFORMANCE_PATH = "conformance/";
     private static final String API_PATH = "api/";
+
     private EncoderRepository encoderRepository;
     private Engine engine;
 
@@ -113,6 +128,61 @@ public class CatalogEncoderImpl implements CatalogEncoder {
                                                            .put(JsonConstants.TITLE, getTitle(ap)));
 
         properties.putArray(JsonConstants.ENDPOINT_DESCRIPTION).add(config.getServiceURL().toString());
+
+        OwsServiceIdentification serviceIdentification = config.getServiceIdentification();
+
+        serviceIdentification.getTitle()
+                             .flatMap(title -> title.getLocalization(config.getDefaultLocale()))
+                             .map(LocalizedString::getText)
+                             .ifPresent(title -> properties.put(JSONConstants.TITLE, title));
+
+        serviceIdentification.getProfiles().stream().map(java.net.URI::toString)
+                             .forEach(profile -> profiles.addObject().put(JsonConstants.HREF, profile));
+
+        ArrayNode keywords = properties.putArray(JsonConstants.KEYWORD);
+        Stream.concat(serviceIdentification.getKeywords().stream(),
+                      engine.getProcessDescriptions().stream()
+                            .map(ProcessDescription::getKeywords)
+                            .flatMap(Set::stream))
+              .map(OwsKeyword::getKeyword)
+              .map(OwsLanguageString::getValue)
+              .forEach(keywords::add);
+
+        serviceIdentification.getAbstract()
+                             .flatMap(description -> description.getLocalization(config.getDefaultLocale()))
+                             .map(LocalizedString::getText)
+                             .ifPresent(description -> properties.put(JsonConstants.ABSTRACT, description));
+
+        OwsServiceProvider serviceProvider = config.getServiceProvider();
+        OwsResponsibleParty serviceContact = serviceProvider.getServiceContact();
+
+        Stream.of(serviceContact.getIndividualName().map(individualName -> {
+                      ObjectNode individualContactPoint = Json.nodeFactory().objectNode();
+                      individualContactPoint.put(JsonConstants.TYPE, ContactPointType.INDIVIDUAL_TYPE)
+                                            .put(JsonConstants.NAME, individualName);
+                      serviceContact.getContactInfo()
+                                    .flatMap(OwsContact::getAddress)
+                                    .map(OwsAddress::getElectronicMailAddress)
+                                    .filter(list -> !list.isEmpty())
+                                    .map(List::iterator)
+                                    .map(Iterator::next)
+                                    .ifPresent(mail -> individualContactPoint.put(JsonConstants.EMAIL, mail));
+                      return individualContactPoint;
+                  }),
+                  serviceContact.getOrganisationName().map(organizationName -> {
+                      ObjectNode organisationContactPoint = Json.nodeFactory().objectNode();
+                      organisationContactPoint.put(JsonConstants.TYPE, ContactPointType.ORGANIZATION_TYPE)
+                                              .put(JsonConstants.NAME, organizationName);
+                      serviceContact.getContactInfo()
+                                    .flatMap(OwsContact::getOnlineResource)
+                                    .flatMap(Link::getHref)
+                                    .map(java.net.URI::toString)
+                                    .ifPresent(uri -> organisationContactPoint.put(JsonConstants.URI, uri));
+                      return organisationContactPoint;
+                  }))
+              .filter(Optional::isPresent).map(Optional::get)
+              .forEach(node -> properties.withArray(JsonConstants.CONTACT_POINT).add(node));
+
         ArrayNode offerings = properties.putArray(JsonConstants.OFFERINGS);
 
         ObjectNode offering = offerings.addObject()

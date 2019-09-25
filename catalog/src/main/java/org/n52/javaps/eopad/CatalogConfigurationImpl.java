@@ -17,14 +17,19 @@
 package org.n52.javaps.eopad;
 
 import okhttp3.HttpUrl;
+import org.n52.iceland.ogc.ows.OwsServiceMetadataRepository;
 import org.n52.janmayen.function.Predicates;
 import org.n52.janmayen.stream.Streams;
 import org.n52.javaps.transactional.TransactionalAlgorithmRepository;
+import org.n52.shetland.ogc.ows.OwsServiceIdentification;
+import org.n52.shetland.ogc.ows.OwsServiceProvider;
+import org.n52.shetland.ogc.wps.WPSConstants;
 import org.n52.shetland.ogc.wps.ap.ApplicationPackage;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -36,12 +41,19 @@ public class CatalogConfigurationImpl implements CatalogConfiguration {
     private final HttpUrl serviceURL;
     private final Collection<TransactionalAlgorithmRepository> repositories;
     private final Catalog catalog;
+    private final OwsServiceMetadataRepository serviceMetadataRepository;
+    private final Locale defaultLocale;
 
-    public CatalogConfigurationImpl(Catalog catalog, Collection<TransactionalAlgorithmRepository> repositories,
-                                    HttpUrl serviceURL) {
+    public CatalogConfigurationImpl(Catalog catalog,
+                                    Collection<TransactionalAlgorithmRepository> repositories,
+                                    OwsServiceMetadataRepository serviceMetadataRepository,
+                                    HttpUrl serviceURL,
+                                    Locale defaultLocale) {
         this.catalog = Objects.requireNonNull(catalog);
         this.repositories = Objects.requireNonNull(repositories);
         this.serviceURL = Objects.requireNonNull(serviceURL);
+        this.serviceMetadataRepository = Objects.requireNonNull(serviceMetadataRepository);
+        this.defaultLocale = Objects.requireNonNull(defaultLocale);
     }
 
     @Override
@@ -59,6 +71,21 @@ public class CatalogConfigurationImpl implements CatalogConfiguration {
         return getProcessUrl(id).newBuilder()
                                 .addPathSegment("jobs")
                                 .build();
+    }
+
+    @Override
+    public Locale getDefaultLocale() {
+        return defaultLocale;
+    }
+
+    @Override
+    public OwsServiceIdentification getServiceIdentification() {
+        return serviceMetadataRepository.getServiceIdentificationFactory(WPSConstants.SERVICE).get();
+    }
+
+    @Override
+    public OwsServiceProvider getServiceProvider() {
+        return serviceMetadataRepository.getServiceProviderFactory(WPSConstants.SERVICE).get();
     }
 
     @Override

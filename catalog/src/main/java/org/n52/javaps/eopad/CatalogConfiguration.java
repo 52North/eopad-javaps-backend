@@ -18,10 +18,13 @@ package org.n52.javaps.eopad;
 
 import okhttp3.HttpUrl;
 import org.n52.shetland.ogc.ows.OwsCode;
+import org.n52.shetland.ogc.ows.OwsServiceIdentification;
+import org.n52.shetland.ogc.ows.OwsServiceProvider;
 import org.n52.shetland.ogc.wps.ProcessOffering;
 import org.n52.shetland.ogc.wps.ap.ApplicationPackage;
 import org.n52.shetland.ogc.wps.description.ProcessDescription;
 
+import java.util.Locale;
 import java.util.stream.Stream;
 
 public interface CatalogConfiguration {
@@ -60,4 +63,10 @@ public interface CatalogConfiguration {
     Stream<ApplicationPackage> getApplicationPackages();
 
     String getServiceIdentifier();
+
+    OwsServiceIdentification getServiceIdentification();
+
+    OwsServiceProvider getServiceProvider();
+
+    Locale getDefaultLocale();
 }
