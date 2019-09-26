@@ -16,6 +16,7 @@
  */
 package org.n52.javaps.docker.io;
 
+import org.n52.javaps.io.complex.ComplexData;
 import org.n52.shetland.ogc.wps.Format;
 
 import java.io.IOException;
@@ -23,11 +24,23 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Objects;
 
+/**
+ * {@link ComplexData} for outputs of Docker containers. This class is <em>not</em> serializable.
+ *
+ * @author Christian Autermann
+ */
 public class DockerOutputData extends FormattedData<DockerFile> {
     private static final long serialVersionUID = -5532313648697378332L;
     private final DockerFile file;
     private final Closer closer;
 
+    /**
+     * Creates a new {@link DockerOutputData}.
+     *
+     * @param file   The {@link DockerFile}.
+     * @param closer The {@link Closer} to call when this data is destroyed.
+     * @param format The {@link Format}.
+     */
     public DockerOutputData(DockerFile file, Closer closer, Format format) {
         super(format);
         this.closer = Objects.requireNonNull(closer);

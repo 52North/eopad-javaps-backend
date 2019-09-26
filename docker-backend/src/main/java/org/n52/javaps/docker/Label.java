@@ -16,12 +16,38 @@
  */
 package org.n52.javaps.docker;
 
+/**
+ * Docker label names.
+ *
+ * @author Christian Autermann
+ */
 public interface Label {
+    /**
+     * The id of the job.
+     */
     String JOB_ID = "org.n52.javaps.job.id";
+    /**
+     * The start time of the job.
+     */
     String JOB_TIME = "org.n52.javaps.job.time";
+    /**
+     * The process identifier.
+     */
     String PROCESS_ID = "org.n52.javaps.process.id";
+    /**
+     * The title of the process description.
+     */
     String PROCESS_TITLE = "org.n52.javaps.process.title";
+    /**
+     * The abstract of the process description.
+     */
     String PROCESS_ABSTRACT = "org.n52.javaps.process.description";
+    /**
+     * The process version.
+     */
     String PROCESS_VERSION = "org.n52.javaps.process.version";
+    /**
+     * The javaPS version.
+     */
     String VERSION = "org.n52.javaps.version";
 }

@@ -31,13 +31,4 @@
     <bean class="org.n52.svalbard.decode.json.wps.DockerExecutionUnitDecoder"/>
     <bean class="org.n52.svalbard.encode.json.wps.DockerExecutionUnitEncoder"/>
 
-    <bean class="org.n52.javaps.docker.Environment">
-        <constructor-arg>
-            <map>
-                <entry key="SCIHUB_USERNAME" value="autermann"/>
-                <entry key="SCIHUB_PASSWORD" value="7ciLZLY89gnEZmZ0eYlV"/>
-            </map>
-        </constructor-arg>
-    </bean>
-
 </beans>

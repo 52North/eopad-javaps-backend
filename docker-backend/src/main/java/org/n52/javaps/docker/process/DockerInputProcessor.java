@@ -76,7 +76,7 @@ public class DockerInputProcessor extends AbstractDockerProcessor<ProcessInputs,
             throws EncodingException, IOException {
         for (Map.Entry<OwsCode, List<Data<?>>> entry : inputs.entrySet()) {
             TypedProcessInputDescription<?> description = descriptionContainer.getInput(entry.getKey());
-            Environment e = environment.withPrefix(Environment.getVariableName(entry.getKey()));
+            Environment e = environment.withPrefix(entry.getKey());
             if (description.isLiteral()) {
                 createLiteralInput(description.asLiteral(), e, entry.getValue());
             } else if (description.isBoundingBox()) {

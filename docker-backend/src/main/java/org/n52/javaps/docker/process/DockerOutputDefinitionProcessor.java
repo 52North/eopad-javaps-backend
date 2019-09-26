@@ -41,7 +41,7 @@ public class DockerOutputDefinitionProcessor
         for (OutputDefinition outputDefinition : outputDefinitions) {
             TypedProcessOutputDescription<?> outputDescription = description.getOutput(outputDefinition.getId());
 
-            Environment e = environment.withPrefix(Environment.getVariableName(outputDefinition.getId()));
+            Environment e = environment.withPrefix(outputDefinition.getId());
             if (outputDescription.isGroup()) {
                 List<DockerOutputInfo> outputs = createOutputs(outputDescription.asGroup(), e,
                                                                outputDefinition.getOutputs());

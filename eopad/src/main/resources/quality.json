@@ -1,0 +1,155 @@
+{
+  "processDescription": {
+    "process": {
+      "id": "org.n52.project.tb15.eopad.SentinelQualityAreaOfInterest",
+      "title": "Calculation of quality of a area of interest for Sentinel-2",
+      "description": "Calculation of quality of a area of interest for Sentinel-2",
+      "version": "1.0.0",
+      "keywords": ["Cloud coverage"],
+      "inputs": [
+        {
+          "id": "source",
+          "title": "Source Input Image (sentinel-2 product in SAFE format)",
+          "description": "Source Input Image (sentinel-2 product in SAFE format). Either provided inline, by reference or by product ID",
+          "minOccurs": 1,
+          "maxOccurs": 1,
+          "input": {
+            "formats": [
+              {
+                "mimeType": "text/plain",
+                "default": true
+              },
+              {
+                "mimeType": "application/zip",
+                "default": false
+              }
+            ]
+          }
+        },
+        {
+          "id": "areaOfInterest",
+          "title": "Area of Interest to be considered during the quality assurance",
+          "description": "Area of Interest to be considered during the quality assurance (e.g. cloud coverage will only play a role in the specific polygon)",
+          "minOccurs": 1,
+          "maxOccurs": 1,
+          "input": {
+            "formats": [
+              {
+                "mimeType": "application/geo+json",
+                "default": true
+              }
+            ]
+          }
+        },
+        {
+          "id": "downsampling",
+          "title": "Aggregation method of down sampling",
+          "description": "Value must be one of 'First', 'Min', 'Max', 'Mean', 'Median'",
+          "minOccurs": 0,
+          "maxOccurs": 1,
+          "input": {
+            "literalDataDomains": [
+              {
+                "default": true,
+                "dataType": { "name": "string" },
+                "defaultValue": "Min",
+                "valueDefinition": ["First", "Min", "Max", "Mean", "Median"]
+              }
+            ]
+          }
+        },
+        {
+          "id": "flagDownsampling",
+          "title": "Aggregation method of flags",
+          "description": "Value must be one of 'First', 'FlagAnd', 'FlagOr', 'FlagMedianAnd', 'FlagMedianOr'",
+          "minOccurs": 0,
+          "maxOccurs": 1,
+          "input": {
+            "literalDataDomains": [
+              {
+                "default": true,
+                "dataType": { "name": "string" },
+                "defaultValue": "First",
+                "valueDefinition": [
+                  "First",
+                  "FlagAnd",
+                  "FlagOr",
+                  "FlagMedianAnd",
+                  "FlagMedianOr"
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "id": "resolution",
+          "title": "Resolution",
+          "description": "Value must be one of '10', '20', '60'",
+          "minOccurs": 0,
+          "maxOccurs": 1,
+          "input": {
+            "literalDataDomains": [
+              {
+                "default": true,
+                "dataType": { "name": "integer" },
+                "defaultValue": "20",
+                "valueDefinition": ["10", "20", "60"]
+              }
+            ]
+          }
+        },
+        {
+          "id": "upsampling",
+          "title": "Interpolation method of up sampling",
+          "description": "Value must be one of 'Nearest', 'Bilinear', 'Bicubic'",
+          "minOccurs": 0,
+          "maxOccurs": 1,
+          "input": {
+            "literalDataDomains": [
+              {
+                "default": true,
+                "dataType": { "name": "string" },
+                "defaultValue": "Bicubic",
+                "valueDefinition": ["Nearest", "Bilinear", "Bicubic"]
+              }
+            ]
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "id": "cloudCoverage",
+          "title": "The cloud coverage for the selected area of interest.",
+          "description": "The cloud coverage for the selected area of interest.",
+          "output": {
+            "literalDataDomains": [
+              {
+                "default": true,
+                "dataType": { "name": "float" },
+                "valueDefinition": [
+                  {
+                    "minimumValue": "0.0",
+                    "maximumValue": "100.0",
+                    "rangeClosure": "closed"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "jobControlOptions": ["async-execute"],
+    "outputTransmission": ["reference"]
+  },
+  "immediateDeployment": true,
+  "executionUnit": [
+    {
+      "unit": {
+        "type": "docker",
+        "image": "52north/testbed-eopad-quality:latest"
+      }
+    }
+  ],
+  "deploymentProfileName": "http://www.opengis.net/profiles/eoc/dockerizedApplication"
+}

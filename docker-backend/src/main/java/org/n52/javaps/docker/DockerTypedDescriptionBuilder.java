@@ -25,8 +25,6 @@ import org.n52.javaps.description.TypedGroupOutputDescription;
 import org.n52.javaps.description.TypedLiteralInputDescription;
 import org.n52.javaps.description.TypedLiteralOutputDescription;
 import org.n52.javaps.description.TypedProcessDescription;
-import org.n52.javaps.description.TypedProcessInputDescription;
-import org.n52.javaps.description.TypedProcessOutputDescription;
 import org.n52.javaps.description.impl.TypedProcessDescriptionFactory;
 import org.n52.javaps.docker.io.DockerInputData;
 import org.n52.javaps.docker.io.DockerOutputData;
@@ -42,18 +40,28 @@ import org.n52.shetland.ogc.wps.description.GroupOutputDescription;
 import org.n52.shetland.ogc.wps.description.LiteralInputDescription;
 import org.n52.shetland.ogc.wps.description.LiteralOutputDescription;
 import org.n52.shetland.ogc.wps.description.ProcessDescription;
-import org.n52.shetland.ogc.wps.description.ProcessInputDescription;
-import org.n52.shetland.ogc.wps.description.ProcessOutputDescription;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.Objects;
 
+/**
+ * {@link TypedDescriptionBuilder} that creates typed descriptions from untyped descriptions using {@link
+ * DockerInputData} and {@link DockerOutputData}.
+ *
+ * @author Christian Autermann
+ */
 @Component
 public class DockerTypedDescriptionBuilder implements TypedDescriptionBuilder {
     private final LiteralTypeRepository literalTypeRepository;
     private final TypedProcessDescriptionFactory descriptionFactory;
 
+    /**
+     * Creates a new {@link DockerTypedDescriptionBuilder}.
+     *
+     * @param literalTypeRepository The {@link LiteralTypeRepository}.
+     * @param descriptionFactory    The {@link TypedProcessDescriptionFactory} to use.
+     */
     @Autowired
     public DockerTypedDescriptionBuilder(LiteralTypeRepository literalTypeRepository,
                                          TypedProcessDescriptionFactory descriptionFactory) {
@@ -63,44 +71,14 @@ public class DockerTypedDescriptionBuilder implements TypedDescriptionBuilder {
 
     @Override
     public TypedProcessDescription createDescription(ProcessDescription processDescription) {
-        return descriptionFactory.process().withDescription(processDescription)
+        return descriptionFactory.process()
+                                 .withDescription(processDescription)
                                  .withVersion(processDescription.getVersion())
                                  .withInput(processDescription.getInputDescriptions().stream()
                                                               .map(this::createProcessInputDescription))
                                  .withOutput(processDescription.getOutputDescriptions().stream()
                                                                .map(this::createProcessOutputDescription))
                                  .build();
-    }
-
-    @Override
-    public TypedProcessOutputDescription<?> createProcessOutputDescription(ProcessOutputDescription output) {
-        if (output.isComplex()) {
-            return createComplexOutputDescription(output.asComplex());
-        } else if (output.isLiteral()) {
-            return createLiteralOutputDescription(output.asLiteral());
-        } else if (output.isGroup()) {
-            return createGroupOutputDescription(output.asGroup());
-        } else if (output.isBoundingBox()) {
-            return creatBoundingBoxOutputDescription(output.asBoundingBox());
-        } else {
-            throw new IllegalArgumentException("unsupported output: " + output);
-        }
-
-    }
-
-    @Override
-    public TypedProcessInputDescription<?> createProcessInputDescription(ProcessInputDescription input) {
-        if (input.isComplex()) {
-            return createComplexInputDescription(input.asComplex());
-        } else if (input.isLiteral()) {
-            return createLiteralInputDescription(input.asLiteral());
-        } else if (input.isGroup()) {
-            return createGroupInputDescription(input.asGroup());
-        } else if (input.isBoundingBox()) {
-            return creatBoundingBoxInputDescription(input.asBoundingBox());
-        } else {
-            throw new IllegalArgumentException("unsupported input: " + input);
-        }
     }
 
     @Override

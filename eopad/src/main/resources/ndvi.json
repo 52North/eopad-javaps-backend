@@ -1,0 +1,142 @@
+{
+  "processDescription": {
+    "process": {
+      "id": "org.n52.project.tb15.eopad.NdviCalculation",
+      "title": "Calculation of NDVI using the SNAP toolbox for Sentinel-2",
+      "description": "Calculation of NDVI using the SNAP toolbox for Sentinel-2",
+      "version": "1.0.0",
+      "keywords": ["Vegetation", "NDVI"],
+      "inputs": [
+        {
+          "id": "source",
+          "title": "Source Input Image (sentinel-2 product in SAFE format)",
+          "description": "Source Input Image (sentinel-2 product in SAFE format). Either provided inline, by reference or by product ID",
+          "minOccurs": 1,
+          "maxOccurs": 1,
+          "input": {
+            "formats": [
+              {
+                "mimeType": "text/plain",
+                "default": true
+              },
+              {
+                "mimeType": "application/zip",
+                "default": false
+              }
+            ]
+          }
+        },
+        {
+          "id": "red_source_band",
+          "title": "the band to be used for the red band",
+          "minOccurs": 0,
+          "maxOccurs": 1,
+          "input": {
+            "literalDataDomains": [
+              {
+                "default": true,
+                "dataType": { "name": "integer" },
+                "valueDefinition": [
+                  {
+                    "minimumValue": "1",
+                    "maximumValue": "13",
+                    "rangeClosure": "closed"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "id": "nir_source_band",
+          "title": "the band to be used for the near-infrared band",
+          "minOccurs": 0,
+          "maxOccurs": 1,
+          "input": {
+            "literalDataDomains": [
+              {
+                "default": true,
+                "dataType": { "name": "integer" },
+                "valueDefinition": [
+                  {
+                    "minimumValue": "1",
+                    "maximumValue": "13",
+                    "rangeClosure": "closed"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "id": "red_factor",
+          "title": "the factor of the NRI",
+          "minOccurs": 0,
+          "maxOccurs": 1,
+          "input": {
+            "literalDataDomains": [
+              {
+                "default": true,
+                "defaultValue": "1.0",
+                "dataType": { "name": "float" },
+                "valueDefinition": [
+                  {
+                    "minimumValue": "0.0",
+                    "rangeClosure": "closed"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "id": "nir_factor",
+          "title": "the factor of the NIR",
+          "minOccurs": 0,
+          "maxOccurs": 1,
+          "input": {
+            "literalDataDomains": [
+              {
+                "default": true,
+                "defaultValue": "1.0",
+                "dataType": { "name": "float" },
+                "valueDefinition": [
+                  {
+                    "minimumValue": "0.0",
+                    "rangeClosure": "closed"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "id": "raster",
+          "title": "The raster of the resulting NDVI calculation",
+          "output": {
+            "formats": [
+              {
+                "mimeType": "image/geotiff",
+                "default": true
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "jobControlOptions": ["async-execute"],
+    "outputTransmission": ["reference"]
+  },
+  "immediateDeployment": true,
+  "executionUnit": [
+    {
+      "unit": {
+        "type": "docker",
+        "image": "52north/testbed-eopad-ndvi:latest"
+      }
+    }
+  ],
+  "deploymentProfileName": "http://www.opengis.net/profiles/eoc/dockerizedApplication"
+}

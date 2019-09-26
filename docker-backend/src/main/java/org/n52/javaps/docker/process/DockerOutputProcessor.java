@@ -48,7 +48,7 @@ public class DockerOutputProcessor extends AbstractDockerProcessor<List<DockerOu
     @Override
     public Closer process(List<DockerOutputInfo> outputInfos) throws ExecutionException {
         try {
-            Closer closer = new Closer(getJobConfig());
+            Closer closer = new Closer(getDelegate());
             ProcessOutputs outputs = context().getOutputs();
             for (DockerOutputInfo outputInfo : outputInfos) {
                 readOutput(closer, outputInfo, outputs);
@@ -82,7 +82,7 @@ public class DockerOutputProcessor extends AbstractDockerProcessor<List<DockerOu
 
     private void readComplexOutput(Closer closer, DockerOutputInfo outputInfo, ProcessOutputs outputs) {
         Format format = outputInfo.getDefinition().getFormat();
-        DockerFile output = new DockerFile(getJobConfig(), outputInfo.getPath());
+        DockerFile output = new DockerFile(getDelegate(), outputInfo.getPath());
         DockerOutputData data = new DockerOutputData(output, closer.increment(), format);
         outputs.put(outputInfo.getDescription().getId(), data);
     }

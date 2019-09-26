@@ -25,16 +25,31 @@ import org.slf4j.Logger;
 
 import java.util.Objects;
 
+/**
+ * {@link DockerJobConfig} that delegates to another {@link DockerJobConfig}.
+ *
+ * @author Christian Autermann
+ */
 public class DelegatingDockerJobConfig extends DelegatingDockerConfig implements DockerJobConfig {
     private DockerJobConfig delegate;
 
+    /**
+     * Create a new {@link DelegatingDockerJobConfig}.
+     *
+     * @param delegate The {@link DockerJobConfig} to delegate to.
+     */
     public DelegatingDockerJobConfig(DockerJobConfig delegate) {
         super(delegate);
         this.delegate = Objects.requireNonNull(delegate);
     }
 
+    /**
+     * Get the delegate.
+     *
+     * @return The {@link DockerJobConfig} to delegate to.
+     */
     @Override
-    protected DockerJobConfig getJobConfig() {
+    protected DockerJobConfig getDelegate() {
         return delegate;
     }
 

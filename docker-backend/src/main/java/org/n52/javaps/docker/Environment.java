@@ -16,6 +16,7 @@
  */
 package org.n52.javaps.docker;
 
+import com.google.common.annotations.VisibleForTesting;
 import org.n52.janmayen.function.Predicates;
 import org.n52.javaps.docker.util.MapDelegate;
 import org.n52.shetland.ogc.ows.OwsCode;
@@ -29,6 +30,11 @@ import java.util.Optional;
 
 import static java.util.stream.Collectors.joining;
 
+/**
+ * Environment map that can have a prefix and converts keys to environment variable name conventions.
+ *
+ * @author Christian Autermann
+ */
 public class Environment extends MapDelegate<String, String> {
     public static final String MIME_TYPE = "MIME_TYPE";
     public static final String SCHEMA = "SCHEMA";
@@ -58,59 +64,133 @@ public class Environment extends MapDelegate<String, String> {
         return values;
     }
 
+    /**
+     * Return a new {@link Environment} where all added keys will get the specified prefix.
+     *
+     * @param prefix The prefix.
+     * @return The {@link Environment}.
+     */
     public Environment withPrefix(Object prefix) {
         return withPrefix(String.valueOf(prefix));
     }
 
+    /**
+     * Return a new {@link Environment} where all added keys will get the specified prefix.
+     *
+     * @param prefix The prefix.
+     * @return The {@link Environment}.
+     */
+    public Environment withPrefix(OwsCode prefix) {
+        return withPrefix(getVariableName(prefix.getValue()));
+    }
+
+    /**
+     * Return a new {@link Environment} where all added keys will get the specified prefix.
+     *
+     * @param prefix The prefix.
+     * @return The {@link Environment}.
+     */
     public Environment withPrefix(String prefix) {
         return new Environment(join(this.prefix, prefix), this.values);
     }
 
-    public void put(Object value) {
-        put(null, value);
+    /**
+     * Put the value under the current prefix.
+     *
+     * @param value The value.
+     * @return The previous value of that key.
+     * @throws IllegalStateException If this {@link Environment} has no prefix.
+     */
+    public String put(Object value) throws IllegalStateException {
+        return put(null, value);
     }
 
-    public String put(String key, Object value) {
+    /**
+     * Put the value under the (prefixed) key.
+     *
+     * @param key   The key.
+     * @param value The value.
+     * @return The previous value of that key.
+     * @throws IllegalStateException If this {@link Environment} has no prefix and {@code key} is {@code null}.
+     */
+    public String put(String key, Object value) throws IllegalStateException {
         return put(key, value == null ? null : value.toString());
     }
 
+    /**
+     * Put the value under the (prefixed) key.
+     *
+     * @param key   The key.
+     * @param value The value.
+     * @return The previous value of that key.
+     * @throws IllegalStateException If this {@link Environment} has no prefix and {@code key} is {@code null}.
+     */
     @Override
-    public String put(String key, String value) {
+    public String put(String key, String value) throws IllegalStateException {
         if (!hasPrefix() && (key == null || key.isEmpty())) {
             throw new IllegalStateException("null or empty keys are only supported with prefix");
         }
-
-        return this.values.put(join(prefix, key), value);
+        return this.values.put(key == null ? prefix : join(prefix, getVariableName(key)), value);
     }
 
+    /**
+     * Checks if this {@link Environment} has a prefix.
+     *
+     * @return If this {@link Environment} has a prefix.
+     */
     public boolean hasPrefix() {
         return this.prefix != null && !this.prefix.isEmpty();
     }
 
+    /**
+     * Encode this {@link Environment} as a Docker environment.
+     *
+     * @return The list of environment variables.
+     */
     public String[] encode() {
         return values.entrySet().stream().map(this::encodeEnvironment).toArray(String[]::new);
     }
 
-    private String encodeEnvironment(Map.Entry<String, String> e) {
-        String value = e.getValue();
-        return String.format("%s=%s", e.getKey(), value == null ? "" : value);
+    /**
+     * Encode the environment variable as a Docker environment variable.
+     *
+     * @param entry The environment variable.
+     * @return The Docker environment variable
+     */
+    private String encodeEnvironment(Map.Entry<String, String> entry) {
+        String value = entry.getValue();
+        return String.format("%s=%s", entry.getKey(), value == null ? "" : value);
     }
 
+    /**
+     * Get the prefix of this {@link Environment}.
+     *
+     * @return The prefix.
+     */
     public String getPrefix() {
         return prefix;
     }
 
+    /**
+     * Join the supplied strings with an underscore.
+     *
+     * @param components The strings.
+     * @return The joined string.
+     */
     private static String join(String... components) {
         return Arrays.stream(components).filter(Objects::nonNull)
                      .filter(Predicates.not(String::isEmpty))
                      .collect(joining("_"));
     }
 
-    public static String getVariableName(OwsCode id) {
-        return getVariableName(id.getValue());
-    }
-
-    public static String getVariableName(String value) {
+    /**
+     * Transform the value to an environment variable name.
+     *
+     * @param value The value.
+     * @return The environment variable name.
+     */
+    @VisibleForTesting
+    static String getVariableName(String value) {
         return value.replaceAll("([a-z])([A-Z])", "$1_$2")
                     .replaceAll("[^a-zA-Z0-9]", "_")
                     .replaceAll("_{2,}", "_")

@@ -22,6 +22,7 @@ import org.n52.javaps.algorithm.IAlgorithm;
 import org.n52.javaps.description.TypedProcessDescription;
 import org.n52.javaps.docker.process.DockerAlgorithm;
 import org.n52.javaps.transactional.AbstractTransactionalAlgorithmRepository;
+import org.n52.javaps.transactional.TransactionalAlgorithmRepository;
 import org.n52.shetland.ogc.wps.ap.ApplicationPackage;
 import org.n52.shetland.ogc.wps.ap.DockerExecutionUnit;
 import org.n52.shetland.ogc.wps.ap.ExecutionUnit;
@@ -35,17 +36,25 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * @author <a href="mailto:m.rieke@52north.org">Matthes Rieke</a>
- * @author <a href="mailto:c.autermann@52north.org">Christian Autermann</a>
+ * {@link TransactionalAlgorithmRepository} for Docker based algorithms.
+ *
+ * @author Matthes Rieke
+ * @author Christian Autermann
  */
 @Repository
 public class DockerAlgorithmRepository extends AbstractTransactionalAlgorithmRepository {
     private static final Logger LOG = LoggerFactory.getLogger(DockerAlgorithmRepository.class);
-
     private final TypedDescriptionBuilder descriptionBuilder;
     private final DockerConfig dockerConfig;
     private final DockerClient dockerClient;
 
+    /**
+     * Creates a new {@link DockerAlgorithmRepository}.
+     *
+     * @param dockerConfig       The {@link DockerConfig}.
+     * @param dockerClient       The {@link DockerClient}.
+     * @param descriptionBuilder The {@link TypedDescriptionBuilder}.
+     */
     @Autowired
     public DockerAlgorithmRepository(DockerConfig dockerConfig,
                                      DockerClient dockerClient,

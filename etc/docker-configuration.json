@@ -66,7 +66,7 @@
     },
     "serviceProvider.onlineResource": {
       "type": "string",
-      "value": "team website|https://github.com/orgs/52North/teams/geoprocessing/members"
+      "value": "team website|https://52north.org"
     },
     "serviceProvider.role.value": {
       "type": "string",

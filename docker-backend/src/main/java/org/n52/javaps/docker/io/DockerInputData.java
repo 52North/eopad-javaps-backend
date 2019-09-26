@@ -17,14 +17,26 @@
 package org.n52.javaps.docker.io;
 
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import org.n52.javaps.io.complex.ComplexData;
 import org.n52.shetland.ogc.wps.Format;
 
 import java.util.Objects;
 
+/**
+ * {@link ComplexData} implementation that can hold arbitrary formatted input data.
+ *
+ * @author Christian Autermann
+ */
 public class DockerInputData extends FormattedData<byte[]> {
     private static final long serialVersionUID = -3925986655313130283L;
     private byte[] content;
 
+    /**
+     * Create a new {@link DockerInputData}.
+     *
+     * @param content The content.
+     * @param format  The {@link Format} of the content.
+     */
     @SuppressFBWarnings("EI_EXPOSE_REP2")
     public DockerInputData(byte[] content, Format format) {
         super(format);

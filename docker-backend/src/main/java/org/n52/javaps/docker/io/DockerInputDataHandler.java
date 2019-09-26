@@ -28,6 +28,11 @@ import java.io.InputStream;
 import java.util.Collections;
 import java.util.Set;
 
+/**
+ * {@link InputHandler} for {@link DockerInputData}.
+ *
+ * @author Christian Autermann
+ */
 @Component
 public class DockerInputDataHandler implements InputHandler {
     private static final Format ANY_FORMAT = new Format("*/*");

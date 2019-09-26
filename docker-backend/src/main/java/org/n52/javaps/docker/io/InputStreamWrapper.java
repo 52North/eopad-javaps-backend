@@ -19,13 +19,26 @@ package org.n52.javaps.docker.io;
 import java.io.IOException;
 import java.io.InputStream;
 
+/**
+ * Wrapper that delegates to an {@link InputStream}.
+ */
 public class InputStreamWrapper extends InputStream {
     private final InputStream delegate;
 
+    /**
+     * Create a new {@link InputStreamWrapper}.
+     *
+     * @param delegate The {@link InputStream} to delegate to.
+     */
     public InputStreamWrapper(InputStream delegate) {
         this.delegate = delegate;
     }
 
+    /**
+     * Get the delegate of this wrapper.
+     *
+     * @return The {@linkplain InputStream delegate}.
+     */
     protected InputStream getDelegate() {
         return delegate;
     }

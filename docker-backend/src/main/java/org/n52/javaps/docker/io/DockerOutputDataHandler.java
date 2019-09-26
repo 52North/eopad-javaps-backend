@@ -30,29 +30,31 @@ import java.io.InputStream;
 import java.util.Collections;
 import java.util.Set;
 
+/**
+ * {@link OutputHandler} for {@link DockerOutputData}.
+ *
+ * @author Christian Autermann
+ */
 @Component
 public class DockerOutputDataHandler implements OutputHandler {
     private static final Logger LOG = LoggerFactory.getLogger(DockerOutputDataHandler.class);
     private static final Format ANY_FORMAT = new Format("*/*");
 
+    @Override
     public InputStream generate(TypedProcessOutputDescription<?> description, Data<?> data, Format format)
             throws EncodingException {
         DockerOutputData dockerData = (DockerOutputData) data;
         if (!format.isCompatible(dockerData.getFormat())) {
             throw new EncodingException("incompatible format");
         }
-        return generate(dockerData);
-    }
-
-    private InputStream generate(DockerOutputData data) throws EncodingException {
         LOG.debug("Reading docker file");
         try {
-            return new InputStreamWrapper(data.getPayload().read()) {
+            return new InputStreamWrapper(dockerData.getPayload().read()) {
                 @Override
                 public void close() throws IOException {
                     LOG.debug("Read docker file");
                     super.close();
-                    data.destroy();
+                    dockerData.destroy();
                 }
             };
         } catch (IOException e) {

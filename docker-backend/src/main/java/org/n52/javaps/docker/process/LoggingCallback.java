@@ -23,6 +23,8 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Copy of {@link com.github.dockerjava.core.command.LogContainerResultCallback} with an customizable logger.
+ *
+ * @author Christian Autermann
  */
 public class LoggingCallback extends ResultCallbackTemplate<LoggingCallback, Frame> {
     private final Logger log;

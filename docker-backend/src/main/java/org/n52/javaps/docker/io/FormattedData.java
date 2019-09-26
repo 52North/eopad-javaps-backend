@@ -24,14 +24,30 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Objects;
 
+/**
+ * {@link ComplexData} that is aware of it's {@link Format}.
+ *
+ * @param <T> The payload type.
+ * @author Christian Autermann
+ */
 public abstract class FormattedData<T> implements ComplexData<T> {
     private static final long serialVersionUID = 2698679543911095384L;
     private Format format;
 
+    /**
+     * Creates a new {@link FormattedData}.
+     *
+     * @param format The {@link Format}.
+     */
     public FormattedData(Format format) {
         this.format = Objects.requireNonNull(format);
     }
 
+    /**
+     * Get the {@link Format}.
+     *
+     * @return The {@link Format}.
+     */
     public Format getFormat() {
         return format;
     }

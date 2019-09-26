@@ -29,6 +29,8 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * Copy of {@link com.github.dockerjava.core.command.PullImageResultCallback} with an customizable logger.
+ *
+ * @author Christian Autermann
  */
 public class PullCallback extends ResultCallbackTemplate<PullCallback, PullResponseItem> {
 

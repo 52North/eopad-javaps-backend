@@ -23,15 +23,32 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Objects;
 
+/**
+ * Object that represents a file inside a Docker container.
+ *
+ * @author Christian Autermann
+ */
 public class DockerFile {
     private final String path;
     private final DockerJobConfig config;
 
+    /**
+     * Creates a new {@link DockerFile}.
+     *
+     * @param config The {@link DockerJobConfig}.
+     * @param path   The path of the file inside the Docker container.
+     */
     public DockerFile(DockerJobConfig config, String path) {
         this.config = Objects.requireNonNull(config);
         this.path = Objects.requireNonNull(path);
     }
 
+    /**
+     * Read the file from the docker container.
+     *
+     * @return The {@link InputStream}.
+     * @throws IOException If an IO error occurs.
+     */
     public InputStream read() throws IOException {
         return DockerUtils.readFile(this.config, this.path);
     }

@@ -20,14 +20,29 @@ import java.time.Duration;
 import java.util.Objects;
 import java.util.Optional;
 
+/**
+ * {@link DockerConfig} that delegates to another {@link DockerConfig}.
+ *
+ * @author Christian Autermann
+ */
 public class DelegatingDockerConfig implements DockerConfig {
     private final DockerConfig delegate;
 
+    /**
+     * Create a new {@link DelegatingDockerConfig}.
+     *
+     * @param delegate The {@link DockerConfig} to delegate to.
+     */
     public DelegatingDockerConfig(DockerConfig delegate) {
         this.delegate = Objects.requireNonNull(delegate);
     }
 
-    protected DockerConfig getJobConfig() {
+    /**
+     * Get the delegate.
+     *
+     * @return The {@link DockerConfig} to delegate to.
+     */
+    protected DockerConfig getDelegate() {
         return delegate;
     }
 

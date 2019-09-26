@@ -38,6 +38,7 @@
         <module>catalog</module>
         <module>javaps-rest</module>
         <module>webapp</module>
+        <module>eopad</module>
     </modules>
     <licenses>
         <license>
@@ -108,6 +109,11 @@
                 <groupId>org.n52.wps</groupId>
                 <artifactId>javaps-rest</artifactId>
                 <version>0.0.1-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>eopad</artifactId>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>${project.groupId}</groupId>
