@@ -43,4 +43,5 @@ public interface JsonConstants {
     String URI = "uri";
     String EMAIL = "email";
     String CONTACT_POINT = "contactPoint";
+    String RESULT = "result";
 }

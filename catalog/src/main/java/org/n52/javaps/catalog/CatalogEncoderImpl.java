@@ -235,6 +235,8 @@ public class CatalogEncoderImpl implements CatalogEncoder {
                       .put(JsonConstants.METHOD, HTTPMethods.GET)
                       .put(JsonConstants.HREF, processUrl)
                       .put(JsonConstants.TYPE, MediaTypes.APPLICATION_JSON)
+                      .putObject(JsonConstants.RESULT)
+                      .put(JsonConstants.TYPE, MediaTypes.APPLICATION_JSON)
                       .set(JsonConstants.CONTENT, content);
             operations.addObject()
                       .put(JsonConstants.CODE, Operations.EXECUTE_PROCESS)
