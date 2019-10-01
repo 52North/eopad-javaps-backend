@@ -49,14 +49,7 @@ public class DockerOutputDataHandler implements OutputHandler {
         }
         LOG.debug("Reading docker file");
         try {
-            return new InputStreamWrapper(dockerData.getPayload().read()) {
-                @Override
-                public void close() throws IOException {
-                    LOG.debug("Read docker file");
-                    super.close();
-                    dockerData.destroy();
-                }
-            };
+            return dockerData.getPayload().get();
         } catch (IOException e) {
             throw new EncodingException(e);
         }

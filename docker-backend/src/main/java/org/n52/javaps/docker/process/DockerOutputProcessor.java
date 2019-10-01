@@ -16,14 +16,14 @@
  */
 package org.n52.javaps.docker.process;
 
+import com.github.dockerjava.api.exception.DockerClientException;
 import com.github.dockerjava.api.exception.DockerException;
 import com.google.common.io.CharStreams;
+import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.n52.javaps.algorithm.ExecutionException;
 import org.n52.javaps.algorithm.ProcessOutputs;
-import org.n52.javaps.docker.io.Closer;
-import org.n52.javaps.docker.io.DockerFile;
 import org.n52.javaps.docker.io.DockerOutputData;
-import org.n52.javaps.docker.util.DockerUtils;
+import org.n52.javaps.docker.util.InputStreams;
 import org.n52.javaps.io.DecodingException;
 import org.n52.javaps.io.GroupOutputData;
 import org.n52.javaps.io.bbox.BoundingBoxData;
@@ -39,35 +39,34 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-public class DockerOutputProcessor extends AbstractDockerProcessor<List<DockerOutputInfo>, Closer> {
+public class DockerOutputProcessor extends AbstractDockerProcessor<List<DockerOutputInfo>, Void> {
 
     public DockerOutputProcessor(DockerJobConfig config) {
         super(config);
     }
 
     @Override
-    public Closer process(List<DockerOutputInfo> outputInfos) throws ExecutionException {
+    public Void process(List<DockerOutputInfo> outputInfos) throws ExecutionException {
         try {
-            Closer closer = new Closer(getDelegate());
             ProcessOutputs outputs = context().getOutputs();
             for (DockerOutputInfo outputInfo : outputInfos) {
-                readOutput(closer, outputInfo, outputs);
+                readOutput(outputInfo, outputs);
             }
-            return closer;
+            return null;
         } catch (DockerException | DecodingException | IOException ex) {
             throw new ExecutionException("could not copy outputs", ex);
         }
     }
 
-    private void readOutput(Closer closer, DockerOutputInfo outputInfo, ProcessOutputs outputs)
+    private void readOutput(DockerOutputInfo outputInfo, ProcessOutputs outputs)
             throws IOException, DecodingException {
         ProcessOutputDescription description = outputInfo.getDescription();
         if (description.isGroup()) {
-            readGroupOutput(closer, outputInfo, outputs);
+            readGroupOutput(outputInfo, outputs);
         } else if (description.isLiteral()) {
             readLiteralOutput(outputInfo, outputs);
         } else if (description.isComplex()) {
-            readComplexOutput(closer, outputInfo, outputs);
+            readComplexOutput(outputInfo, outputs);
         } else if (description.isBoundingBox()) {
             readBoundingBoxOutput(outputInfo, outputs);
         }
@@ -80,16 +79,15 @@ public class DockerOutputProcessor extends AbstractDockerProcessor<List<DockerOu
         throw new UnsupportedOperationException("bounding box outputs are not supported");
     }
 
-    private void readComplexOutput(Closer closer, DockerOutputInfo outputInfo, ProcessOutputs outputs) {
+    private void readComplexOutput(DockerOutputInfo outputInfo, ProcessOutputs outputs) {
         Format format = outputInfo.getDefinition().getFormat();
-        DockerFile output = new DockerFile(getDelegate(), outputInfo.getPath());
-        DockerOutputData data = new DockerOutputData(output, closer.increment(), format);
+        DockerOutputData data = new DockerOutputData(() -> readFile(outputInfo), format);
         outputs.put(outputInfo.getDescription().getId(), data);
     }
 
     private void readLiteralOutput(DockerOutputInfo outputInfo, ProcessOutputs outputs)
             throws DecodingException, IOException {
-        try (InputStream stream = DockerUtils.readFile(this, outputInfo.getPath());
+        try (InputStream stream = readFile(outputInfo);
              InputStreamReader reader = new InputStreamReader(stream, StandardCharsets.UTF_8)) {
             LiteralType<?> literalType = outputInfo.getDescription().asLiteral().getType();
             LiteralData data = literalType.parseToBinding(CharStreams.toString(reader));
@@ -97,14 +95,31 @@ public class DockerOutputProcessor extends AbstractDockerProcessor<List<DockerOu
         }
     }
 
-    private void readGroupOutput(Closer closer, DockerOutputInfo outputInfo, ProcessOutputs outputs)
+    private void readGroupOutput(DockerOutputInfo outputInfo, ProcessOutputs outputs)
             throws IOException, DecodingException {
         ProcessOutputs childOutputs = new ProcessOutputs();
         for (DockerOutputInfo child : outputInfo.getOutputInfos()) {
-            readOutput(closer, child, childOutputs);
+            readOutput(child, childOutputs);
         }
         GroupOutputData data = new GroupOutputData(childOutputs);
         outputs.put(outputInfo.getDescription().getId(), data);
+    }
+
+    private InputStream readFile(DockerOutputInfo path) throws IOException {
+        InputStream inputStream = client().copyArchiveFromContainerCmd(getProcessContainerId(), path.getPath()).exec();
+        TarArchiveInputStream tarArchiveInputStream = new TarArchiveInputStream(inputStream);
+        try {
+            if (tarArchiveInputStream.getNextTarEntry() == null) {
+                tarArchiveInputStream.close();
+                return InputStreams.empty();
+            }
+        } catch (IOException e) {
+            tarArchiveInputStream.close();
+            throw e;
+        } catch (DockerClientException | DockerException e) {
+            throw new IOException(e);
+        }
+        return tarArchiveInputStream;
     }
 
 }

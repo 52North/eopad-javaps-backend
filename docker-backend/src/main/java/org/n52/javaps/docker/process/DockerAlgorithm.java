@@ -22,6 +22,7 @@ import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.InspectContainerResponse;
 import com.github.dockerjava.api.command.PullImageCmd;
 import com.github.dockerjava.api.exception.DockerClientException;
+import com.github.dockerjava.api.exception.DockerException;
 import com.github.dockerjava.api.model.Bind;
 import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Volume;
@@ -36,8 +37,6 @@ import org.n52.javaps.docker.DockerConfig;
 import org.n52.javaps.docker.Environment;
 import org.n52.javaps.docker.Label;
 import org.n52.javaps.docker.TypedDescriptionBuilder;
-import org.n52.javaps.docker.io.Closer;
-import org.n52.javaps.docker.util.DockerUtils;
 import org.n52.javaps.engine.ProcessExecutionContext;
 import org.n52.shetland.ogc.ows.OwsLanguageString;
 import org.n52.shetland.ogc.wps.OutputDefinition;
@@ -59,7 +58,8 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.toList;
 
 /**
- * @author <a href="mailto:m.rieke@52north.org">Matthes Rieke</a>
+ * @author Matthes Rieke
+ * @author Christian Autermann
  */
 public class DockerAlgorithm extends AbstractAlgorithm {
 
@@ -99,6 +99,9 @@ public class DockerAlgorithm extends AbstractAlgorithm {
         Environment environment = new Environment(executionUnit.getEnvironment());
         environment.putAll(dockerConfig.getGlobalEnvironment());
         this.jobConfig = new DockerJobConfigImpl(dockerConfig, dockerClient, getDescription(), context, environment);
+
+        context.onDestroy(this::cleanup);
+
         try {
             // create a volume to hold the inputs and outputs
             jobConfig.setVolumeId(createVolume());
@@ -119,16 +122,13 @@ public class DockerAlgorithm extends AbstractAlgorithm {
                                                                   .withCmd(cmd);
             jobConfig.setHelperContainerId(createContainer(createHelperContainerCmd));
             startContainer(jobConfig.getHelperContainerId());
-            List<DockerOutputInfo> outputInfos;
-
-            DockerInputProcessor inputProcessor = new DockerInputProcessor(jobConfig);
-            DockerOutputDefinitionProcessor outputDefinitionProcessor = new DockerOutputDefinitionProcessor(jobConfig);
 
             // copy the inputs to the volume by copying them to the stopped helper container
-            inputProcessor.process(context.getInputs());
+            new DockerInputProcessor(jobConfig).process(context.getInputs());
 
             // set the environment variables for the process outputs
-            outputInfos = outputDefinitionProcessor.process(getOutputDefinitions());
+            List<DockerOutputInfo> outputInfos = new DockerOutputDefinitionProcessor(jobConfig)
+                                                         .process(getOutputDefinitions());
 
             // wait for the container to stop
             if (!waitForCompletion(jobConfig.getHelperContainerId(), Duration.of(5, ChronoUnit.MINUTES))) {
@@ -156,19 +156,40 @@ public class DockerAlgorithm extends AbstractAlgorithm {
             if (exitCode != 0) {
                 throw new ExecutionException(String.format("process exited with non-zero exit code %d", exitCode));
             }
-            DockerOutputProcessor outputProcessor = new DockerOutputProcessor(jobConfig);
-
             // copy the generated outputs
-            Closer closer = outputProcessor.process(outputInfos);
-            if (!closer.isCleanupDeferred()) {
-                // no outputs are waiting to be copied, clean up now
-                DockerUtils.cleanup(jobConfig);
-            }
+            new DockerOutputProcessor(jobConfig).process(outputInfos);
         } catch (Throwable t) {
-            // in case the process fails, the clean will not be initiated by the result persistence
-            DockerUtils.cleanup(jobConfig);
             Throwables.throwIfInstanceOf(t, ExecutionException.class);
             throw new ExecutionException(t);
+        }
+    }
+
+    private void cleanup() {
+        // remove the helper container
+        removeContainer(jobConfig.getHelperContainerId());
+        // remove the helper container
+        removeContainer(jobConfig.getProcessContainerId());
+        // remove the data volume
+        removeVolume(jobConfig.getVolumeId());
+    }
+
+    private void removeContainer(String containerId) {
+        if (containerId != null) {
+            try {
+                jobConfig.client().removeContainerCmd(containerId).withForce(true).exec();
+            } catch (DockerException ex) {
+                jobConfig.log().error("unable to remove container " + containerId, ex);
+            }
+        }
+    }
+
+    private void removeVolume(String volumeId) {
+        if (volumeId != null) {
+            try {
+                jobConfig.client().removeVolumeCmd(volumeId).exec();
+            } catch (DockerException ex) {
+                jobConfig.log().error("unable to remove volume " + volumeId, ex);
+            }
         }
     }
 

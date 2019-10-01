@@ -29,32 +29,29 @@ import java.util.Objects;
  *
  * @author Christian Autermann
  */
-public class DockerOutputData extends FormattedData<DockerFile> {
+public class DockerOutputData extends FormattedData<Streamable> {
     private static final long serialVersionUID = -5532313648697378332L;
-    private final DockerFile file;
-    private final Closer closer;
+    private final Streamable data;
 
     /**
      * Creates a new {@link DockerOutputData}.
      *
-     * @param file   The {@link DockerFile}.
-     * @param closer The {@link Closer} to call when this data is destroyed.
+     * @param data   The {@link Streamable}.
      * @param format The {@link Format}.
      */
-    public DockerOutputData(DockerFile file, Closer closer, Format format) {
+    public DockerOutputData(Streamable data, Format format) {
         super(format);
-        this.closer = Objects.requireNonNull(closer);
-        this.file = Objects.requireNonNull(file);
+        this.data = Objects.requireNonNull(data);
     }
 
     @Override
-    public DockerFile getPayload() {
-        return file;
+    public Streamable getPayload() {
+        return data;
     }
 
     @Override
     public Class<?> getSupportedClass() {
-        return DockerFile.class;
+        return Streamable.class;
     }
 
     private void writeObject(ObjectOutputStream out) throws IOException {
@@ -69,8 +66,4 @@ public class DockerOutputData extends FormattedData<DockerFile> {
         throw new IOException(getClass().getName() + "is not serializable");
     }
 
-    @Override
-    public void destroy() {
-        closer.destroy();
-    }
 }
