@@ -70,7 +70,7 @@
         <swagger-annotations-version>1.5.13</swagger-annotations-version>
         <wps-version>1.4.0-SNAPSHOT</wps-version>
         <slf4j-version>1.7.26</slf4j-version>
-        <jackson-version>2.9.9</jackson-version>
+        <jackson-version>2.9.10</jackson-version>
         <spring-version>5.1.9.RELEASE</spring-version>
         <arctic-sea-version>7.2.0-SNAPSHOT</arctic-sea-version>
         <docker-java-version>3.1.5</docker-java-version>
@@ -228,7 +228,7 @@
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
                 <artifactId>jackson-databind</artifactId>
-                <version>2.9.10</version>
+                <version>${jackson-version}</version>
             </dependency>
             <dependency>
                 <groupId>com.fasterxml.jackson.core</groupId>
