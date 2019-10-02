@@ -173,10 +173,7 @@ public class DockerAlgorithm extends AbstractAlgorithm {
             List<DockerOutputInfo> outputInfos = createOutputInfos();
 
             // wait for the container to stop
-            if (!waitForCompletion(jobConfig.getHelperContainerId(), Duration.of(5, ChronoUnit.MINUTES))) {
-                stopContainer(jobConfig.getHelperContainerId());
-                throw new ExecutionException("helper container did not stop");
-            }
+            waitForCompletion(jobConfig.getHelperContainerId(), Duration.of(5, ChronoUnit.MINUTES));
 
             CreateContainerCmd createContainerCmd = createContainerCmd(executionUnit.getImage())
                                                             .withEnv(jobConfig.getJobEnvironment().encode())
@@ -187,17 +184,8 @@ public class DockerAlgorithm extends AbstractAlgorithm {
             jobConfig.setProcessContainerId(createContainer(createContainerCmd));
             startContainer(jobConfig.getProcessContainerId());
 
-            if (!waitForCompletion(jobConfig.getProcessContainerId(), jobConfig.getProcessTimeout().orElse(null))) {
-                stopContainer(jobConfig.getHelperContainerId());
-            }
+            waitForCompletion(jobConfig.getProcessContainerId(), jobConfig.getProcessTimeout().orElse(null));
 
-            Integer exitCode = getExitCode(jobConfig.getProcessContainerId());
-            if (exitCode == null) {
-                throw new ExecutionException("process did not exit");
-            }
-            if (exitCode != 0) {
-                throw new ExecutionException(String.format("process exited with non-zero exit code %d", exitCode));
-            }
             // copy the generated outputs
             readOutputs(outputInfos);
         } catch (Throwable t) {
@@ -371,13 +359,27 @@ public class DockerAlgorithm extends AbstractAlgorithm {
         return labels;
     }
 
-    private boolean waitForCompletion(String containerId, Duration timeout) throws InterruptedException {
-        LoggingCallback callback = createCallback(containerId);
-        if (timeout == null) {
-            callback.awaitCompletion();
-            return true;
-        } else {
-            return callback.awaitCompletion(timeout.toMillis(), TimeUnit.MILLISECONDS);
+    private void waitForCompletion(String containerId, Duration timeout) throws ExecutionException {
+        try {
+            LoggingCallback callback = createCallback(containerId);
+            if (timeout == null) {
+                callback.awaitCompletion();
+            } else {
+                if (!callback.awaitCompletion(timeout.toMillis(), TimeUnit.MILLISECONDS)) {
+                    stopContainer(containerId);
+                }
+            }
+            Integer exitCode = getExitCode(containerId);
+            if (exitCode == null) {
+                throw new ExecutionException("process did not exit");
+            }
+
+            if (exitCode != 0) {
+                throw new ExecutionException(String.format("process exited with non-zero exit code %d: %s",
+                                                           exitCode, callback.getErrorOutput()));
+            }
+        } catch (InterruptedException e) {
+            throw new ExecutionException(e);
         }
     }
 
@@ -399,14 +401,16 @@ public class DockerAlgorithm extends AbstractAlgorithm {
 
     private void createInputs(ProcessInputs inputs) throws ExecutionException {
         try {
-            createInputs(jobConfig.description(), jobConfig.getJobEnvironment().withPrefix(Environment.INPUT), inputs);
+            createInputs(jobConfig.description(), jobConfig.getJobEnvironment()
+                                                           .withPrefix(Environment.INPUT), inputs);
         } catch (IOException | EncodingException e) {
             throw new ExecutionException("error creating inputs", e);
         }
     }
 
     private void createInputs(TypedProcessInputDescriptionContainer descriptionContainer,
-                              Environment environment, ProcessInputs inputs)
+                              Environment environment, ProcessInputs
+                                                               inputs)
             throws EncodingException, IOException {
         for (Map.Entry<OwsCode, List<Data<?>>> entry : inputs.entrySet()) {
             TypedProcessInputDescription<?> description = descriptionContainer.getInput(entry.getKey());
@@ -427,7 +431,8 @@ public class DockerAlgorithm extends AbstractAlgorithm {
 
     private void createBoundingBoxInput(TypedBoundingBoxInputDescription description,
                                         Environment environment,
-                                        List<Data<?>> values) {
+                                        List<Data<
+                                                         ?>> values) {
         if (description.getOccurence().isMultiple()) {
             int index = 0;
             for (Data<?> data : values) {
@@ -451,7 +456,8 @@ public class DockerAlgorithm extends AbstractAlgorithm {
     }
 
     private void createLiteralInput(TypedLiteralInputDescription description, Environment environment,
-                                    List<Data<?>> values) throws EncodingException {
+                                    List<Data<?>>
+                                            values) throws EncodingException {
         if (description.getOccurence().isMultiple()) {
             int index = 0;
             for (Data<?> data : values) {
@@ -464,7 +470,8 @@ public class DockerAlgorithm extends AbstractAlgorithm {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void createLiteralInput(TypedLiteralInputDescription description, Environment environment,
-                                    LiteralData literalData) throws EncodingException {
+                                    LiteralData
+                                            literalData) throws EncodingException {
         LiteralType type = description.getType();
         String value = type.generate(literalData.getPayload());
         environment.put(value);
@@ -472,7 +479,8 @@ public class DockerAlgorithm extends AbstractAlgorithm {
     }
 
     private void createComplexInput(TypedComplexInputDescription description, Environment environment,
-                                    List<Data<?>> values) throws IOException {
+                                    List<Data<?>>
+                                            values) throws IOException {
         if (description.getOccurence().isMultiple()) {
             int index = 0;
             for (Data<?> data : values) {
@@ -495,7 +503,8 @@ public class DockerAlgorithm extends AbstractAlgorithm {
             tarOutput.closeArchiveEntry();
         }
         copyArchiveToContainerCmd().withRemotePath(jobConfig.getInputPath())
-                                   .withTarInputStream(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()))
+                                   .withTarInputStream(new ByteArrayInputStream(byteArrayOutputStream
+                                                                                        .toByteArray()))
                                    .exec();
 
         environment.put(jobConfig.getInputPath(name));
@@ -507,7 +516,8 @@ public class DockerAlgorithm extends AbstractAlgorithm {
     }
 
     private void createGroupInput(TypedGroupInputDescription description, Environment environment,
-                                  List<Data<?>> values) throws EncodingException, IOException {
+                                  List<Data<?>>
+                                          values) throws EncodingException, IOException {
         if (description.getOccurence().isMultiple()) {
             int index = 0;
             for (Data<?> data : values) {
@@ -519,7 +529,8 @@ public class DockerAlgorithm extends AbstractAlgorithm {
     }
 
     private void createGroupInput(TypedGroupInputDescription descriptionContainer, Environment environment,
-                                  GroupInputData data) throws EncodingException, IOException {
+                                  GroupInputData
+                                          data) throws EncodingException, IOException {
         createInputs(descriptionContainer, environment, data.getPayload());
     }
 
@@ -579,7 +590,8 @@ public class DockerAlgorithm extends AbstractAlgorithm {
 
     private InputStream readFile(DockerOutputInfo path) throws IOException {
         String containerId = jobConfig.getProcessContainerId();
-        InputStream inputStream = jobConfig.client().copyArchiveFromContainerCmd(containerId, path.getPath()).exec();
+        InputStream inputStream = jobConfig.client().copyArchiveFromContainerCmd(containerId, path.getPath())
+                                           .exec();
         TarArchiveInputStream tarArchiveInputStream = new TarArchiveInputStream(inputStream);
         try {
             if (tarArchiveInputStream.getNextTarEntry() == null) {

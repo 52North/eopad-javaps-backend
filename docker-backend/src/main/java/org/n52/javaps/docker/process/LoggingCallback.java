@@ -21,6 +21,9 @@ import com.github.dockerjava.core.async.ResultCallbackTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.LinkedList;
+import java.util.List;
+
 /**
  * Copy of {@link com.github.dockerjava.core.command.LogContainerResultCallback} with an customizable logger.
  *
@@ -28,13 +31,34 @@ import org.slf4j.LoggerFactory;
  */
 public class LoggingCallback extends ResultCallbackTemplate<LoggingCallback, Frame> {
     private final Logger log;
+    private final List<String> stderr = new LinkedList<>();
+    private final List<String> stdout = new LinkedList<>();
 
     public LoggingCallback(Logger parent, String containerId) {
         this.log = LoggerFactory.getLogger(String.format("%s.%s", parent.getName(), containerId));
     }
 
+    public String getErrorOutput() {
+        return String.join("\n", stderr);
+    }
+
+    public String getStandardOutput() {
+        return String.join("\n", stdout);
+    }
+
     @Override
     public void onNext(Frame item) {
-        log.info("{}", item.toString());
+        String payload = new String(item.getPayload());
+        switch (item.getStreamType()) {
+            case STDERR:
+                stderr.add(payload);
+                log.warn("{}", payload);
+                break;
+            case STDOUT:
+                stdout.add(payload);
+                log.info("{}", payload);
+                break;
+        }
+
     }
 }
