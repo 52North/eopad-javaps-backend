@@ -31,31 +31,25 @@ import java.util.List;
  */
 public class LoggingCallback extends ResultCallbackTemplate<LoggingCallback, Frame> {
     private final Logger log;
-    private final List<String> stderr = new LinkedList<>();
-    private final List<String> stdout = new LinkedList<>();
+    private final List<String> output = new LinkedList<>();
 
     public LoggingCallback(Logger parent, String containerId) {
         this.log = LoggerFactory.getLogger(String.format("%s.%s", parent.getName(), containerId));
     }
 
-    public String getErrorOutput() {
-        return String.join("\n", stderr);
-    }
-
-    public String getStandardOutput() {
-        return String.join("\n", stdout);
+    public String getOutput() {
+        return String.join("\n", output);
     }
 
     @Override
     public void onNext(Frame item) {
         String payload = new String(item.getPayload());
+        output.add(payload);
         switch (item.getStreamType()) {
             case STDERR:
-                stderr.add(payload);
                 log.warn("{}", payload);
                 break;
             case STDOUT:
-                stdout.add(payload);
                 log.info("{}", payload);
                 break;
         }

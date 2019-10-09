@@ -375,8 +375,8 @@ public class DockerAlgorithm extends AbstractAlgorithm {
             }
 
             if (exitCode != 0) {
-                throw new ExecutionException(String.format("process exited with non-zero exit code %d: %s",
-                                                           exitCode, callback.getErrorOutput()));
+                throw new ExecutionException(String.format("process exited with non-zero exit code %d:\n%s",
+                                                           exitCode, callback.getOutput()));
             }
         } catch (InterruptedException e) {
             throw new ExecutionException(e);
