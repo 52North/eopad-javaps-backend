@@ -5,11 +5,12 @@ RUN apk add --no-cache git
 WORKDIR /usr/src/app
 
 COPY . /usr/src/app
-
-RUN mvn --batch-mode --errors --fail-fast \
-      --define maven.javadoc.skip=true \
-      --define maven.test.skip=true \
-      -P no-download install
+RUN set -ex \
+ && git clone https://github.com/52North/javaPS.git \
+ && git clone https://github.com/52North/arctic-sea.git \
+ && (cd javaPS && mvn -q -B -e -ff -D maven.javadoc.skip=true -D maven.test.skip=true -P no-download install) \
+ && (cd artic-sea && mvn -q -B -e -ff -D maven.javadoc.skip=true -D maven.test.skip=true -P no-download install) \
+ && mvn -q -B -e -ff -D maven.javadoc.skip=true -D maven.test.skip=true -P no-download install
 
 FROM jetty:jre8-alpine
 
