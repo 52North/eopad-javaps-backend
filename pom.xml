@@ -69,7 +69,7 @@
         <swagger-codegen-version>3.0.8</swagger-codegen-version>
         <swagger-annotations-version>1.5.13</swagger-annotations-version>
         <wps-version>1.4.0</wps-version>
-        <slf4j-version>1.7.29</slf4j-version>
+        <slf4j-version>1.7.30</slf4j-version>
         <jackson-version>2.10.1</jackson-version>
         <spring-version>5.2.1.RELEASE</spring-version>
         <arctic-sea-version>7.2.0</arctic-sea-version>
