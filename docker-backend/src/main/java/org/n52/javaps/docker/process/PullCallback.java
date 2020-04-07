@@ -125,7 +125,10 @@ public class PullCallback extends ResultCallbackTemplate<PullCallback, PullRespo
     }
 
     private String messageFromPullResult(PullResponseItem pullResponseItem) {
-        return (pullResponseItem.getError() != null) ? pullResponseItem.getError() : pullResponseItem.getStatus();
+        if (pullResponseItem.getErrorDetail() != null) {
+            return pullResponseItem.getErrorDetail().getMessage();
+        }
+        return pullResponseItem.getStatus();
     }
 
     @Override
