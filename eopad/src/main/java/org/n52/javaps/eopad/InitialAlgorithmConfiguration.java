@@ -18,9 +18,14 @@ package org.n52.javaps.eopad;
 
 import org.n52.javaps.transactional.TransactionalAlgorithmConfiguration;
 import org.n52.javaps.transactional.TransactionalAlgorithmConfigurer;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Condition;
+import org.springframework.context.annotation.ConditionContext;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.type.AnnotatedTypeMetadata;
 
 @Configuration
+@ConditionalOnProperty(value = "eopad.processes.enabled", matchIfMissing = true)
 public class InitialAlgorithmConfiguration implements TransactionalAlgorithmConfigurer {
 
     private static final String NDVI
