@@ -33,6 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.List;
 
 /**
@@ -44,6 +45,8 @@ import java.util.List;
 @Repository
 public class DockerAlgorithmRepository extends AbstractTransactionalAlgorithmRepository {
     private static final Logger LOG = LoggerFactory.getLogger(DockerAlgorithmRepository.class);
+    private static final URI DEPLOYMENT_PROFILE =
+            URI.create("http://www.opengis.net/profiles/eoc/dockerizedApplication");
     private final TypedDescriptionBuilder descriptionBuilder;
     private final DockerConfig dockerConfig;
     private final DockerClient dockerClient;
@@ -67,7 +70,9 @@ public class DockerAlgorithmRepository extends AbstractTransactionalAlgorithmRep
     @Override
     public boolean isSupported(ApplicationPackage applicationPackage) {
         List<ExecutionUnit> executionUnits = applicationPackage.getExecutionUnits();
-        return executionUnits.size() == 1 && executionUnits.iterator().next() instanceof DockerExecutionUnit;
+        return DEPLOYMENT_PROFILE.equals(applicationPackage.getDeploymentProfileName()) &&
+               executionUnits.size() == 1 &&
+               executionUnits.iterator().next() instanceof DockerExecutionUnit;
     }
 
     @Override
