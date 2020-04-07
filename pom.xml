@@ -39,6 +39,7 @@
         <module>javaps-rest</module>
         <module>webapp</module>
         <module>eopad</module>
+        <module>transactional-rest</module>
     </modules>
     <licenses>
         <license>

@@ -35,8 +35,6 @@ import org.n52.svalbard.decode.Decoder;
 import org.n52.svalbard.decode.DecoderRepository;
 import org.n52.svalbard.decode.JsonDecoderKey;
 import org.n52.svalbard.decode.exception.DecodingException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -52,7 +50,6 @@ import java.util.Objects;
 @Controller
 @Configurable
 public class TransactionalApiImpl implements TransactionalApi, Constructable {
-    private static final Logger LOG = LoggerFactory.getLogger(TransactionalApiImpl.class);
     private DecoderRepository decoderRepository;
     private Decoder<ApplicationPackage, JsonNode> decoder;
     private String serviceURL;
