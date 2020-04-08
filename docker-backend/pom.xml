@@ -17,36 +17,54 @@
     limitations under the License.
 
 -->
-<project
-        xmlns="http://maven.apache.org/POM/4.0.0"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>org.n52.testbed.eopad</groupId>
-        <artifactId>eopad-parent</artifactId>
-        <version>1.6.0-SNAPSHOT</version>
+        <groupId>org.n52</groupId>
+        <artifactId>parent</artifactId>
+        <version>16</version>
     </parent>
+    <groupId>org.n52.wps</groupId>
     <artifactId>docker-backend</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
     <name>javaPS Docker Process Repository</name>
+    <properties>
+        <version.javaPS>1.6.0-SNAPSHOT</version.javaPS>
+        <version.docker-java>3.2.1</version.docker-java>
+        <version.spring-boot>2.2.6.RELEASE</version.spring-boot>
+        <version.joda-time>2.10.5</version.joda-time>
+        <version.commons-compress>1.20</version.commons-compress>
+        <version.spotbugs>4.0.1</version.spotbugs>
+        <version.arctic-sea>7.3.1</version.arctic-sea>
+        <findbugs.version>3.0.2</findbugs.version>
+    </properties>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.n52.wps</groupId>
+                <artifactId>javaPS</artifactId>
+                <version>${version.javaPS}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
     <dependencies>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>org.n52.wps</groupId>
             <artifactId>transactional</artifactId>
+            <version>${version.javaPS}</version>
         </dependency>
         <dependency>
             <groupId>org.n52.wps</groupId>
             <artifactId>engine</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>commons-codec</groupId>
-                    <artifactId>commons-codec</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>joda-time</groupId>
             <artifactId>joda-time</artifactId>
+            <version>${version.joda-time}</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -55,6 +73,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-compress</artifactId>
+            <version>${version.commons-compress}</version>
         </dependency>
         <dependency>
             <groupId>org.n52.arctic-sea</groupId>
@@ -74,57 +93,22 @@
         </dependency>
         <dependency>
             <groupId>com.github.docker-java</groupId>
+            <artifactId>docker-java-core</artifactId>
+            <version>${version.docker-java}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.docker-java</groupId>
+            <artifactId>docker-java-api</artifactId>
+            <version>${version.docker-java}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.github.docker-java</groupId>
             <artifactId>docker-java</artifactId>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.google.guava</groupId>
-                    <artifactId>guava</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>jcl-over-slf4j</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.httpcomponents</groupId>
-                    <artifactId>httpclient</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.httpcomponents</groupId>
-                    <artifactId>httpcore</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>commons-codec</groupId>
-                    <artifactId>commons-codec</artifactId>
-                </exclusion>
-                <exclusion>
-                        <groupId>com.fasterxml.jackson.jaxrs</groupId>
-                        <artifactId>jackson-jaxrs-json-provider</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.jaxrs</groupId>
-            <artifactId>jackson-jaxrs-json-provider</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>commons-codec</groupId>
-            <artifactId>commons-codec</artifactId>
-            <scope>runtime</scope>
+            <version>${version.docker-java}</version>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>jcl-over-slf4j</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpcore</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>
@@ -149,19 +133,23 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-autoconfigure</artifactId>
+            <version>${version.spring-boot}</version>
         </dependency>
         <dependency>
             <groupId>com.github.spotbugs</groupId>
             <artifactId>spotbugs-annotations</artifactId>
+            <version>${version.spotbugs}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.google.code.findbugs</groupId>
             <artifactId>jsr305</artifactId>
+            <version>${findbugs.version}</version>
         </dependency>
         <dependency>
             <groupId>org.n52.arctic-sea</groupId>
             <artifactId>svalbard-json</artifactId>
+            <version>${version.arctic-sea}</version>
             <scope>runtime</scope>
         </dependency>
     </dependencies>

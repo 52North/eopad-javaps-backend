@@ -23,14 +23,14 @@
     <parent>
         <artifactId>eopad-parent</artifactId>
         <groupId>org.n52.testbed.eopad</groupId>
-        <version>1.6.0-SNAPSHOT</version>
+        <version>1.0.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>eopad</artifactId>
     <name>javaPS EOPAD Configuration</name>
     <dependencies>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>org.n52.wps</groupId>
             <artifactId>docker-backend</artifactId>
         </dependency>
         <dependency>
@@ -38,7 +38,7 @@
             <artifactId>spring-boot-autoconfigure</artifactId>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>org.n52.wps</groupId>
             <artifactId>transactional</artifactId>
         </dependency>
         <dependency>
@@ -118,25 +118,5 @@
                 </includes>
             </resource>
         </resources>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <version>3.1.1</version>
-                <executions>
-                    <execution>
-                        <configuration>
-                            <descriptors>
-                                <descriptor>src/main/config/assemble.xml</descriptor>
-                            </descriptors>
-                        </configuration>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                        <phase>install</phase>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
     </build>
 </project>

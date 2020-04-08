@@ -16,8 +16,8 @@
  */
 package org.n52.javaps.docker.process;
 
+import com.github.dockerjava.api.async.ResultCallbackTemplate;
 import com.github.dockerjava.api.model.Frame;
-import com.github.dockerjava.core.async.ResultCallbackTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +26,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Copy of {@link com.github.dockerjava.core.command.LogContainerResultCallback} with an customizable logger.
  *
  * @author Christian Autermann
  */

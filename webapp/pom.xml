@@ -24,20 +24,15 @@
     <parent>
         <groupId>org.n52.testbed.eopad</groupId>
         <artifactId>eopad-parent</artifactId>
-        <version>1.6.0-SNAPSHOT</version>
+        <version>1.0.0-SNAPSHOT</version>
     </parent>
     <artifactId>webapp</artifactId>
     <name>javaPS EOPAD Webapp</name>
     <packaging>war</packaging>
     <dependencies>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>org.n52.wps</groupId>
             <artifactId>docker-backend</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>catalog</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>
@@ -46,12 +41,12 @@
             <scope>runtime</scope>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>org.n52.wps</groupId>
             <artifactId>transactional</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>org.n52.wps</groupId>
             <artifactId>transactional-rest</artifactId>
             <scope>runtime</scope>
         </dependency>
@@ -91,7 +86,6 @@
             <artifactId>xml</artifactId>
             <scope>runtime</scope>
         </dependency>
-
     </dependencies>
     <build>
         <finalName>${project.artifactId}</finalName>

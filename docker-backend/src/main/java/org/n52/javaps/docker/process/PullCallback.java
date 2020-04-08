@@ -16,10 +16,10 @@
  */
 package org.n52.javaps.docker.process;
 
+import com.github.dockerjava.api.async.ResultCallbackTemplate;
 import com.github.dockerjava.api.exception.DockerClientException;
 import com.github.dockerjava.api.model.PullResponseItem;
 import com.github.dockerjava.api.model.ResponseItem;
-import com.github.dockerjava.core.async.ResultCallbackTemplate;
 import org.slf4j.Logger;
 
 import javax.annotation.CheckForNull;

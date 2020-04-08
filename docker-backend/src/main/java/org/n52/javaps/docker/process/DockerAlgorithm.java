@@ -283,13 +283,13 @@ public class DockerAlgorithm extends AbstractAlgorithm {
         return cmd;
     }
 
-    private Integer getExitCode(String containerId) throws InterruptedException {
+    private Long getExitCode(String containerId) throws InterruptedException {
         while (isRunning(containerId)) {
             LOG.info("Container still running, waiting to finish");
             Thread.sleep(10000);
         }
         InspectContainerResponse inspectContainerResponse = inspectContainer(containerId);
-        return inspectContainerResponse.getState().getExitCode();
+        return inspectContainerResponse.getState().getExitCodeLong();
     }
 
     private void stopContainer(String containerId) {
@@ -368,7 +368,7 @@ public class DockerAlgorithm extends AbstractAlgorithm {
                     stopContainer(containerId);
                 }
             }
-            Integer exitCode = getExitCode(containerId);
+            Long exitCode = getExitCode(containerId);
             if (exitCode == null) {
                 throw new ExecutionException("process did not exit");
             }
