@@ -33,9 +33,6 @@
     <name>javaPS EOPAD Parent</name>
     <inceptionYear>2019</inceptionYear>
     <modules>
-        <module>transactional</module>
-        <module>transactional-rest</module>
-        <module>javaps-rest</module>
         <module>webapp</module>
         <module>eopad</module>
     </modules>
@@ -94,24 +91,9 @@
                 <version>1.0.0-SNAPSHOT</version>
             </dependency>
             <dependency>
-                <groupId>org.n52.wps</groupId>
-                <artifactId>transactional</artifactId>
-                <version>${version.javaPS}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.n52.wps</groupId>
-                <artifactId>transactional-rest</artifactId>
-                <version>${version.javaPS}</version>
-            </dependency>
-            <dependency>
                 <groupId>${project.groupId}</groupId>
                 <artifactId>eopad</artifactId>
                 <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.n52.wps</groupId>
-                <artifactId>javaps-rest</artifactId>
-                <version>0.0.1-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>org.n52.arctic-sea</groupId>
@@ -127,26 +109,6 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-autoconfigure</artifactId>
                 <version>${version.spring-boot}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.n52.wps</groupId>
-                <artifactId>engine</artifactId>
-                <version>${version.javaPS}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.n52.wps</groupId>
-                <artifactId>service</artifactId>
-                <version>${version.javaPS}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.n52.wps</groupId>
-                <artifactId>kvp</artifactId>
-                <version>${version.javaPS}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.n52.wps</groupId>
-                <artifactId>xml</artifactId>
-                <version>${version.javaPS}</version>
             </dependency>
             <dependency>
                 <groupId>org.n52.wps</groupId>
