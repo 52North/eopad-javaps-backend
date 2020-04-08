@@ -36,10 +36,10 @@
             <useTransitiveDependencies>true</useTransitiveDependencies>
             <useTransitiveFiltering>true</useTransitiveFiltering>
             <includes>
-                <include>${project.groupId}:catalog</include>
                 <include>${project.groupId}:docker-backend</include>
                 <include>${project.groupId}:eopad</include>
                 <include>${project.groupId}:transactional</include>
+                <include>${project.groupId}:transactional-rest</include>
                 <include>org.n52.wps:javaps-rest</include>
             </includes>
             <excludes>

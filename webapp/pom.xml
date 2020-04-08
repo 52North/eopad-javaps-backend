@@ -24,7 +24,7 @@
     <parent>
         <groupId>org.n52.testbed.eopad</groupId>
         <artifactId>eopad-parent</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>1.6.0-SNAPSHOT</version>
     </parent>
     <artifactId>webapp</artifactId>
     <name>javaPS EOPAD Webapp</name>
@@ -48,6 +48,11 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>transactional</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>transactional-rest</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>
