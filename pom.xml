@@ -33,7 +33,6 @@
     <name>javaPS EOPAD Parent</name>
     <inceptionYear>2019</inceptionYear>
     <modules>
-        <module>docker-backend</module>
         <module>transactional</module>
         <module>transactional-rest</module>
         <module>javaps-rest</module>
