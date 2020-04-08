@@ -374,7 +374,7 @@ public class DockerAlgorithm extends AbstractAlgorithm {
             }
 
             if (exitCode != 0) {
-                throw new ExecutionException(String.format("process exited with non-zero exit code %d:\n%s",
+                throw new ExecutionException(String.format("process exited with non-zero exit code %d:%n%s",
                                                            exitCode, callback.getOutput()));
             }
         } catch (InterruptedException e) {
@@ -408,8 +408,7 @@ public class DockerAlgorithm extends AbstractAlgorithm {
     }
 
     private void createInputs(TypedProcessInputDescriptionContainer descriptionContainer,
-                              Environment environment, ProcessInputs
-                                                               inputs)
+                              Environment environment, ProcessInputs inputs)
             throws EncodingException, IOException {
         for (Map.Entry<OwsCode, List<Data<?>>> entry : inputs.entrySet()) {
             TypedProcessInputDescription<?> description = descriptionContainer.getInput(entry.getKey());
@@ -429,9 +428,7 @@ public class DockerAlgorithm extends AbstractAlgorithm {
     }
 
     private void createBoundingBoxInput(TypedBoundingBoxInputDescription description,
-                                        Environment environment,
-                                        List<Data<
-                                                         ?>> values) {
+                                        Environment environment,                                        List<Data<?>> values) {
         if (description.getOccurence().isMultiple()) {
             int index = 0;
             for (Data<?> data : values) {
@@ -455,8 +452,7 @@ public class DockerAlgorithm extends AbstractAlgorithm {
     }
 
     private void createLiteralInput(TypedLiteralInputDescription description, Environment environment,
-                                    List<Data<?>>
-                                            values) throws EncodingException {
+                                    List<Data<?>> values) throws EncodingException {
         if (description.getOccurence().isMultiple()) {
             int index = 0;
             for (Data<?> data : values) {
@@ -469,8 +465,7 @@ public class DockerAlgorithm extends AbstractAlgorithm {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void createLiteralInput(TypedLiteralInputDescription description, Environment environment,
-                                    LiteralData
-                                            literalData) throws EncodingException {
+                                    LiteralData literalData) throws EncodingException {
         LiteralType type = description.getType();
         String value = type.generate(literalData.getPayload());
         environment.put(value);
@@ -515,8 +510,7 @@ public class DockerAlgorithm extends AbstractAlgorithm {
     }
 
     private void createGroupInput(TypedGroupInputDescription description, Environment environment,
-                                  List<Data<?>>
-                                          values) throws EncodingException, IOException {
+                                  List<Data<?>> values) throws EncodingException, IOException {
         if (description.getOccurence().isMultiple()) {
             int index = 0;
             for (Data<?> data : values) {
@@ -528,8 +522,7 @@ public class DockerAlgorithm extends AbstractAlgorithm {
     }
 
     private void createGroupInput(TypedGroupInputDescription descriptionContainer, Environment environment,
-                                  GroupInputData
-                                          data) throws EncodingException, IOException {
+                                  GroupInputData data) throws EncodingException, IOException {
         createInputs(descriptionContainer, environment, data.getPayload());
     }
 

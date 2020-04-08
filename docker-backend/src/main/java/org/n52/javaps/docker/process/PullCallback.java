@@ -18,6 +18,7 @@ package org.n52.javaps.docker.process;
 
 import com.github.dockerjava.api.exception.DockerClientException;
 import com.github.dockerjava.api.model.PullResponseItem;
+import com.github.dockerjava.api.model.ResponseItem;
 import com.github.dockerjava.core.async.ResultCallbackTemplate;
 import org.slf4j.Logger;
 
@@ -125,8 +126,9 @@ public class PullCallback extends ResultCallbackTemplate<PullCallback, PullRespo
     }
 
     private String messageFromPullResult(PullResponseItem pullResponseItem) {
-        if (pullResponseItem.getErrorDetail() != null) {
-            return pullResponseItem.getErrorDetail().getMessage();
+        ResponseItem.ErrorDetail errorDetail = pullResponseItem.getErrorDetail();
+        if (errorDetail != null) {
+            return errorDetail.getMessage();
         }
         return pullResponseItem.getStatus();
     }

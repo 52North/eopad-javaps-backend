@@ -21,6 +21,7 @@ import com.github.dockerjava.core.async.ResultCallbackTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -43,15 +44,16 @@ public class LoggingCallback extends ResultCallbackTemplate<LoggingCallback, Fra
 
     @Override
     public void onNext(Frame item) {
-        String payload = new String(item.getPayload());
+        String payload = new String(item.getPayload(), StandardCharsets.UTF_8);
         output.add(payload);
         switch (item.getStreamType()) {
             case STDERR:
-                log.warn("{}", payload);
+                log.warn(payload);
                 break;
             case STDOUT:
-                log.info("{}", payload);
+                log.info(payload);
                 break;
+            default:
         }
 
     }
