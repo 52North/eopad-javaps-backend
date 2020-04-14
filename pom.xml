@@ -163,7 +163,6 @@
                         <include>**/*.xml</include>
                     </includes>
                     <excludes>
-                        <exclude>javaps-rest/**</exclude>
                         <exclude>webapp/overlays/**</exclude>
                     </excludes>
                     <strictCheck>true</strictCheck>
