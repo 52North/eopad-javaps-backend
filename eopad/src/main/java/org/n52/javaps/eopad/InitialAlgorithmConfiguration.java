@@ -1,5 +1,5 @@
 /*
- * Copyright 2019 52°North Initiative for Geospatial Open Source
+ * Copyright 2019-2020 52°North Initiative for Geospatial Open Source
  * Software GmbH
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,9 +18,11 @@ package org.n52.javaps.eopad;
 
 import org.n52.javaps.transactional.TransactionalAlgorithmConfiguration;
 import org.n52.javaps.transactional.TransactionalAlgorithmConfigurer;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
+@ConditionalOnProperty(value = "eopad.processes.enabled", matchIfMissing = true)
 public class InitialAlgorithmConfiguration implements TransactionalAlgorithmConfigurer {
 
     private static final String NDVI

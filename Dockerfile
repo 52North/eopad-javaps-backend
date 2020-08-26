@@ -9,7 +9,7 @@ RUN set -ex \
  && git clone https://github.com/52North/javaPS.git \
  && git clone https://github.com/52North/arctic-sea.git \
  && (cd arctic-sea && mvn -B -e -ff -D maven.javadoc.skip=true -D skipTests=true -P no-download install) \
- && (cd javaPS && mvn -B -e -ff -D maven.javadoc.skip=true -D skipTests=true -P no-download install) \
+ && (cd javaPS && git co 1.4.0 && mvn -B -e -ff -D maven.javadoc.skip=true -D skipTests=true -P no-download install) \
  && mvn -B -e -ff -D maven.javadoc.skip=true -D skipTests=true -P no-download install
 
 FROM jetty:jre8-alpine

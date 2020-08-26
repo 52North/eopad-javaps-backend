@@ -1,6 +1,6 @@
 <!--
 
-    Copyright 2019 52°North Initiative for Geospatial Open Source
+    Copyright 2019-2020 52°North Initiative for Geospatial Open Source
     Software GmbH
 
     Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,13 +31,8 @@
     <packaging>war</packaging>
     <dependencies>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>org.n52.wps</groupId>
             <artifactId>docker-backend</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>catalog</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>
@@ -46,13 +41,18 @@
             <scope>runtime</scope>
         </dependency>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>org.n52.wps</groupId>
             <artifactId>transactional</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.n52.wps</groupId>
-            <artifactId>javaps-rest</artifactId>
+            <artifactId>transactional-rest</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.n52.wps</groupId>
+            <artifactId>rest</artifactId>
             <scope>runtime</scope>
         </dependency>
         <dependency>
@@ -86,7 +86,6 @@
             <artifactId>xml</artifactId>
             <scope>runtime</scope>
         </dependency>
-
     </dependencies>
     <build>
         <finalName>${project.artifactId}</finalName>
