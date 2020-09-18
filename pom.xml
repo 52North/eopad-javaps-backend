@@ -59,7 +59,7 @@
         <url>http://52north.org</url>
     </organization>
     <properties>
-        <version.spring-boot>2.3.3.RELEASE</version.spring-boot>
+        <version.spring-boot>2.3.4.RELEASE</version.spring-boot>
         <version.javaPS>1.6.0-SNAPSHOT</version.javaPS>
         <version.docker-backend>1.0.0-SNAPSHOT</version.docker-backend>
         <version.arctic-sea>7.4.1</version.arctic-sea>
